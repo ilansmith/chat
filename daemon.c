@@ -74,6 +74,8 @@ static sck_t d_init(int argc, char *argv[])
 
 #ifdef DEBUG
     PRINT("DEBUG mode");
+#else
+    PRINT("press <Ctrl-C> to quit");
 #endif
 
     /* initiation of mutexs and time object */
@@ -91,7 +93,7 @@ static sck_t d_init(int argc, char *argv[])
     dummy_user.mailbox = NULL;
 
     /* initiating users array */
-    ASSERT(users = (user_t **)calloc(MEMBERS_INIT_SZ, sizeof(user_t *)), 
+    ASSERT((int)(users = (user_t **)calloc(MEMBERS_INIT_SZ, sizeof(user_t *))), 
 	ERRT_ALLOC, ERRA_PANIC, "could not perform memory allocation");
 
     for (i = 0; i < MEMBERS_INIT_SZ; i++)
@@ -114,7 +116,7 @@ static sck_t d_init(int argc, char *argv[])
     ASSERT(listen(daemon, QLEN), ERRT_LISTEN, ERRA_PANIC, "could not listen "
 	"on socket");
 
-    PDMN("up and ready to receive incoming connections");
+    PDMN("up and running");
     return daemon;
 }
 
@@ -129,8 +131,8 @@ static void d_loop(sck_t daemon)
     addr_len = sizeof(client_addr);
     while (1)
     {
-	ASSERT(svr = alloc_svr(), ERRT_ALLOC, ERRA_WARN, "could not perform "
-	    "memory allocation");
+	ASSERT((int)(svr = alloc_svr()), ERRT_ALLOC, ERRA_WARN, "could not "
+	    "perform memory allocation");
 	ASSERT(SVR_SCK(svr) = accept(daemon, (sockaddr *)&client_addr,
 	    &addr_len), ERRT_ACCEPT, ERRA_WARN, "could not accept on socekt");
 
