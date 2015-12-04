@@ -66,49 +66,45 @@
 #endif
 
 #define ERROR_HANDLE(ACTION, ...)                                             \
-    SET_COLOUR(stderr, COLOUR_ERROR_PROMPT); \
-    fprintf(stderr, "\nerror:%s ", COL_RESET),             \
-    SET_COLOUR(stderr, COLOUR_ERROR); \
-    fprintf(stderr, " "),             \
-    ##__VA_ARGS__;                                                        \
-    SET_COLOUR(stderr, COL_RESET); \
-    switch (ACTION)                                                       \
-    {                                                                     \
-    case ERRA_PANIC:                                                      \
-        PANIC_EXIT                                                        \
-        break;                                                            \
-    case ERRA_WARN:                                                       \
-        break;                                                            \
-    }
+	SET_COLOUR(stderr, COLOUR_ERROR_PROMPT);                              \
+	fprintf(stderr, "\nerror:%s ", COL_RESET),                            \
+	SET_COLOUR(stderr, COLOUR_ERROR);                                     \
+	fprintf(stderr, " "),                                                 \
+	##__VA_ARGS__;                                                        \
+	SET_COLOUR(stderr, COL_RESET);                                        \
+	switch (ACTION)                                                       \
+	{                                                                     \
+	case ERRA_PANIC:                                                      \
+		PANIC_EXIT                                                    \
+		break;                                                        \
+	case ERRA_WARN:                                                       \
+		break;                                                        \
+	}
 
 #define FAIL_EQUAL_ZERO(VALUE, ACTION, ...)                                   \
-	if (!(VALUE))                                                         \
-	{                                                                     \
-	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                              \
+	if (!(VALUE)) {                                                       \
+		ERROR_HANDLE(ACTION, ##__VA_ARGS__);                          \
 	}
 
 #define FAIL_LESS_THAN_ZERO(VALUE, ACTION, ...)                               \
-	if ((VALUE) < 0)                                                      \
-	{                                                                     \
-	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                              \
+	if ((VALUE) < 0) {                                                    \
+		ERROR_HANDLE(ACTION, ##__VA_ARGS__);                          \
 	}
 
 #define FAIL_NOT_EQUAL_ONE(VALUE, ACTION, ...)                                \
-	if ((VALUE) != 1)                                                     \
-	{                                                                     \
-	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                              \
+	if ((VALUE) != 1) {                                                   \
+		ERROR_HANDLE(ACTION, ##__VA_ARGS__);                          \
 	}
 
 #define __ASSERT(VALUE, ERROR, ACTION, ...)                                   \
-	switch (ERROR)                                                        \
-	{                                                                     \
+	switch (ERROR) {                                                      \
 	case ERRT_ALLOC:                                                      \
 	case ERRT_REALLOC:                                                    \
 	case ERRT_GETPROTOBYNAME:                                             \
 	case ERRT_INET_ADDR:                                                  \
 	case ERRT_EXTRACTMSG:                                                 \
-	    FAIL_EQUAL_ZERO(VALUE, ACTION, ##__VA_ARGS__);                    \
-	    break;                                                            \
+		FAIL_EQUAL_ZERO(VALUE, ACTION, ##__VA_ARGS__);                \
+		break;                                                        \
 	case ERRT_SOCKET:                                                     \
 	case ERRT_BIND:                                                       \
 	case ERRT_LISTEN:                                                     \
@@ -119,24 +115,23 @@
 	case ERRT_READ_INPUT:                                                 \
 	case ERRT_LOGIN:                                                      \
 	case ERRT_POSTMSG:                                                    \
-	case ERRT_PEERINSERT: 						      \
-	    FAIL_LESS_THAN_ZERO(VALUE, ACTION, ##__VA_ARGS__);                \
-	    break;                                                            \
+	case ERRT_PEERINSERT:                                                 \
+		FAIL_LESS_THAN_ZERO(VALUE, ACTION, ##__VA_ARGS__);            \
+		break;                                                        \
 	case ERRT_SIGNIN:                                                     \
-	    FAIL_NOT_EQUAL_ONE(VALUE, ACTION, ##__VA_ARGS__);                 \
-	    break;                                                            \
+		FAIL_NOT_EQUAL_ONE(VALUE, ACTION, ##__VA_ARGS__);             \
+		break;                                                        \
 	}
-
 
 #define MIN(X, Y) ((X) <= (Y) ? (X) : (Y))
 #define MAX(X, Y) ((X) <= (Y) ? (Y) : (X))
 
 /* TODO: find better arrangement */
 typedef struct cfriend_t {
-    long fid;
-    int fconnected;
-    char fname[STR_MAX_NAME_LENGTH];
-    struct cfriend_t *next;
+	long fid;
+	int fconnected;
+	char fname[STR_MAX_NAME_LENGTH];
+	struct cfriend_t *next;
 } cfriend_t;
 
 typedef int sck_t;

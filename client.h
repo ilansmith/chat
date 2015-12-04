@@ -21,45 +21,43 @@
 #define CMD_NO "no"
 
 typedef enum {
-    cmd_help,
-    cmd_connect,
-    cmd_disconnect,
-    cmd_login,
-    cmd_logout,
-    cmd_register,
-    cmd_unregister,
-    cmd_friends,
-    cmd_fonline,
-    cmd_foffline,
-    cmd_add,
-    cmd_remove,
-    cmd_im,
-    cmd_chat,
-    cmd_accept,
-    cmd_reject,
-    cmd_exit,
-    cmd_yes,
-    cmd_no,
-    cmd_error,
+	cmd_help,
+	cmd_connect,
+	cmd_disconnect,
+	cmd_login,
+	cmd_logout,
+	cmd_register,
+	cmd_unregister,
+	cmd_friends,
+	cmd_fonline,
+	cmd_foffline,
+	cmd_add,
+	cmd_remove,
+	cmd_im,
+	cmd_chat,
+	cmd_accept,
+	cmd_reject,
+	cmd_exit,
+	cmd_yes,
+	cmd_no,
+	cmd_error,
 } cmd_f;
 
 typedef struct {
-    char name[STR_MAX_COMMAND_LENGTH];
-    cmd_f type;
-    int prefix;
+	char name[STR_MAX_COMMAND_LENGTH];
+	cmd_f type;
+	int prefix;
 } cmd_t;
 
-
 typedef enum {
-    CSTAT_CONNECT,
-    CSTAT_DISCONNECT,
-    CSTAT_LOGIN,
-    CSTAT_LOGOUT,
-    CSTAT_LOOP,
-    CSTAT_HELP,
-    CSTAT_EXIT,
-    CSTAT_ERROR,
+	CSTAT_CONNECT,
+	CSTAT_DISCONNECT,
+	CSTAT_LOGIN,
+	CSTAT_LOGOUT,
+	CSTAT_LOOP,
+	CSTAT_HELP,
+	CSTAT_EXIT,
+	CSTAT_ERROR,
 } cstat_t;
-
-
 #endif
+

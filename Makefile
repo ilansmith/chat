@@ -3,8 +3,8 @@ CLIENT=client
 SERVER=server
 
 ifeq ($(DEBUG),)
-  # by default debug is on
-  DEBUG=y
+# by default debug is on
+DEBUG=y
 endif
 
 all: $(SERVER) $(CLIENT)
@@ -13,7 +13,7 @@ CFLAGS=-Wall -Werror
 LDLIBS=-lpthread
 
 ifeq ($(DEBUG),y)
-  CFLAGS+=-g -DDEBUG
+CFLAGS+=-g -DDEBUG
 endif
 
 # server
