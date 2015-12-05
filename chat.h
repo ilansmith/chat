@@ -68,28 +68,28 @@
 #define PANIC_EXIT c_panic();
 #endif
 
-#define ERROR_HANDLE(ACTION, ...)                                            \
-        printf("\nerror: "),                                                 \
-        ##__VA_ARGS__;                                                       \
-	switch (ACTION)                                                      \
-        {                                                                    \
-        case ERRA_PANIC:                                                     \
-	    PANIC_EXIT                                                       \
-	    break;                                                           \
-	case ERRA_WARN:                                                      \
-            break;                                                           \
+#define ERROR_HANDLE(ACTION, ...)                                             \
+        printf("\nerror: "),                                                  \
+        ##__VA_ARGS__;                                                        \
+	switch (ACTION)                                                       \
+        {                                                                     \
+        case ERRA_PANIC:                                                      \
+	    PANIC_EXIT                                                        \
+	    break;                                                            \
+	case ERRA_WARN:                                                       \
+            break;                                                            \
 	}
 
-#define FAIL_EQUAL_ZERO(VALUE, ACTION, ...)                               \
-	if (!(VALUE))                                                          \
-	{                                                                      \
-	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                          \
+#define FAIL_EQUAL_ZERO(VALUE, ACTION, ...)                                   \
+	if (!(VALUE))                                                         \
+	{                                                                     \
+	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                              \
 	}
 
-#define FAIL_LESS_THAN_ZERO(VALUE, ACTION, ...)                           \
-	if ((VALUE) < 0)                                                       \
-	{                                                                      \
-	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                          \
+#define FAIL_LESS_THAN_ZERO(VALUE, ACTION, ...)                               \
+	if ((VALUE) < 0)                                                      \
+	{                                                                     \
+	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                              \
 	}
 
 #define FAIL_NOT_EQUAL_ONE(VALUE, ACTION, ...)                                \
@@ -98,7 +98,7 @@
 	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                              \
 	}
 
-#define __ASSERT(VALUE, ERROR, ACTION, ...)                                   \
+#define __ASSERT(VALUE, ERROR, ACTION, ...)                                     \
 	switch (ERROR)                                                        \
 	{                                                                     \
 	case ERRT_ALLOC:                                                      \
