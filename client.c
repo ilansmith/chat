@@ -389,16 +389,19 @@ static void c_help()
 	CMD, DSC);
 #define AVAILABLE_COMMANDS printf("available commands are:\n") 
 
-#ifndef DEBUG
+#ifdef DEBUG
+#define HELP_CMD_CONNECT                                                      \
+        HELP_CMD_PRINT("connect <destination>", "connect to the chat "        \
+		"network, where <destination> is either:");                   \
+	printf("%-*s    %s\n", FIELD_LENGTH, " ", "a valid IP address in "    \
+		"dot notation, or");                                          \
+	printf("%-*s    %s\n", FIELD_LENGTH, " ", "a valid host name (TBD), " \
+		"or");                                                        \
+	printf("%-*s    %s\n", FIELD_LENGTH, " ", "the character '-': "       \
+		"initially localhost, otherwise same as previous destination")
+#else
 #define HELP_CMD_CONNECT HELP_CMD_PRINT("connect", "connect to the chat "     \
 	"network") 
-#else
-#define HELP_CMD_CONNECT                                                      \
-	HELP_CMD_PRINT("connect <destination>", "");                          \
-	printf("    where:\n");                                               \
-        printf("    <destination> is: ip_address or\n");                      \
-	printf("                      host_name  or\n");                      \
-	printf("                      - same as previous connection\n") 
 #endif
 
 #define HELP_CMD_REGISTER HELP_CMD_PRINT("register <user_name>", "register a "\
@@ -422,7 +425,8 @@ static void c_help()
 	"from your list of friends")
 #define HELP_CMD_IM HELP_CMD_PRINT("im <friend_name> <message>", "send an "   \
 	"instant message")
-#define HELP_CMD_CHAT HELP_CMD_PRINT("chat <friend_name>", "chat with a user")
+#define HELP_CMD_CHAT HELP_CMD_PRINT("chat <friend_name>", "chat with a "     \
+	"user (TBD)")
 #define HELP_CMD_ACCEPT HELP_CMD_PRINT("accept <friend_name>", "accept an "   \
 	"incoming chat request")
 #define HELP_CMD_REJECT HELP_CMD_PRINT("reject <friend_name>", "reject an "   \
