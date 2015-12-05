@@ -186,7 +186,8 @@ static int c_input_parse(char **srcpp, char *dstp, int len)
     return i;
 }
 
-/* TODO: go over all places this function gets called */
+/* TODO: go over all places this function gets called 
+ * c_get_command receives num command options of type cmd_f */
 static cmd_f c_get_command(int num, ...)
 {
 #define CMD_NAME(CMD) commands[CMD].name
