@@ -17,6 +17,11 @@ long usr_array_size;
 struct timeval zero_tm;
 mtx_t mtx_usrcnt;
 
+static void d_usage(char *binary)
+{
+    PRINT("usage: %s", binary);
+}
+
 /* reallocating memory for more users */
 /*
 int usr_array_enlarge()
@@ -41,7 +46,7 @@ static svr_t *alloc_svr()
 }
 
 /* daemon initiation function */
-static sck_t d_init()
+static sck_t d_init(int argc, char *argv[])
 {
 #define QLEN 10
 
@@ -49,6 +54,27 @@ static sck_t d_init()
     sck_t daemon;
     protoent *prtp = NULL;
     sockaddr_in svr_addr;
+
+    /* usage abidence */
+    if (argc != 1)
+    {
+	d_usage(argv[0]);
+	exit(1);
+    }
+
+    PRINT("*****************************************");
+    PRINT("*                                       *");
+    PRINT("*          Welcome to IAS-Chat          *");
+    PRINT("*                Server                 *");
+    PRINT("*                                       *");
+    PRINT("*           %c IAS, April 2004           *", ASCII_COPYRIGHT);
+    PRINT("*****************************************");
+    PRINT("");
+    PRINT("");
+
+#ifdef DEBUG
+    PRINT("DEBUG mode");
+#endif
 
     /* initiation of mutexs and time object */
     zero_tm.tv_sec = 0;
@@ -114,7 +140,7 @@ static void d_loop(sck_t daemon)
 
 int main(int argc, char *argv[])
 {
-    sck_t daemon = d_init();
+    sck_t daemon = d_init(argc, argv);
     d_loop(daemon);
 
     return 0;
