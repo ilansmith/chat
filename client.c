@@ -795,7 +795,7 @@ static void c_register(char *name)
 	PCLIENT("user '%s' was successfuly registered", name);
 	break;
     case REGISTER_FAIL_REREGISTER:
-	PCLIENT("user '%s' is already registered, can not re-gegister", name);
+	PCLIENT("user '%s' is already registered, can not re-register", name);
 	break;
     case REGISTER_FAIL_CAPACITY:
 	PCLIENT("user capacity is full, '%s' could not be registered", name);
