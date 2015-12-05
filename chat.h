@@ -21,7 +21,6 @@
 #define CONN_PORT 5555
 
 #define ASCII_COPYRIGHT 0xa9
-#define PRINT(arg, ...) printf(arg "\n", ##__VA_ARGS__)
 
 #define STR_NIL ""
 #define STR_MAX_COMMAND_LENGTH 11
@@ -69,7 +68,8 @@
 #endif
 
 #define ERROR_HANDLE(ACTION, ...)                                             \
-        printf("\nerror: "),                                                  \
+        printf("\n%s%s%serror:%s %s", COL_BG_BLACK, COLOUR_CLEAR,             \
+	   COLOUR_ERROR_PROMPT, COL_BG_BLACK, COLOUR_ERROR),                  \
         ##__VA_ARGS__;                                                        \
 	switch (ACTION)                                                       \
         {                                                                     \
@@ -98,7 +98,7 @@
 	    ERROR_HANDLE(ACTION, ##__VA_ARGS__);                              \
 	}
 
-#define __ASSERT(VALUE, ERROR, ACTION, ...)                                     \
+#define __ASSERT(VALUE, ERROR, ACTION, ...)                                   \
 	switch (ERROR)                                                        \
 	{                                                                     \
 	case ERRT_ALLOC:                                                      \
