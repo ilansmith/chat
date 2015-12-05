@@ -999,7 +999,7 @@ static int s_is_reserved(char *cname)
 
     for (ptr = reserved; *ptr; ptr++)
     {
-	if (!strcmp(cname, *ptr))
+	if (!strcasecmp(cname, *ptr))
 	    return 1;
     }
 
