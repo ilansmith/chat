@@ -1,5 +1,4 @@
-all: 
-	make server; make client;
+all: server client 
 
 server: daemon.o server.o chat_io.o
 	gcc -g -Wall -o $@ daemon.o server.o chat_io.o -l pthread 
