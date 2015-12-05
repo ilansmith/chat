@@ -968,7 +968,7 @@ static void s_login(svr_t *svr, char *cname)
 	if (users[i] == DUMMY_USER)
 	    continue;
 
-	if (!memcmp(users[i]->name, cname, MIN(strlen(users[i]->name),
+	if (!memcmp(users[i]->name, cname, MAX(strlen(users[i]->name),
 	    strlen(cname))))
 	{
 	    if (users[i]->connected)
