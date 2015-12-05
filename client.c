@@ -79,7 +79,7 @@ static cmd_t commands[] =
     {EMPTY_STRING, cmd_error, 0}
 };
 
-/* test wether prf is a prefix fo str containing at least min characters
+/* test wether prf is a prefix of str containing at least min characters
  * returns:
  * 0 - if the test is false
  * 1 - if the test is true */
