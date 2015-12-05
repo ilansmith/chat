@@ -6,7 +6,7 @@
 #include "server.h"
 
 #define PDMN(FMT, ...)                                                        \
-    SET_COLOUR(stdout, COLOUR_DAEMON); \
+    SET_COLOUR(stdout, COLOUR_DAEMON);                                        \
     fprintf(stdout, "daemon: " FMT "\n", ##__VA_ARGS__);                      \
     COLOUR_RESET;
 
