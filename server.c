@@ -672,10 +672,10 @@ static void s_handle_command(svr_t *svr)
     msg_t in_msg;
 
     ASSERT(msg_recv(&in_msg, SVR_SCK(svr)), ERRT_RECV, ERRA_WARN,
-	users[SVR_CID(svr)]->name, "could not recieve command");
+	users[SVR_CID(svr)]->name, "could not receive command");
 
 #ifdef DEBUG
-    PSVR(users[SVR_CID(svr)]->name, "recieved a %s command from user", 
+    PSVR(users[SVR_CID(svr)]->name, "received a %s command from user", 
 	tlv_str[MSG_TYP(&in_msg)]);
 #endif
 
@@ -718,7 +718,7 @@ static int s_mail_receive_im(svr_t *svr, msg_t *msg)
     int success;
 
 #ifdef DEBUG
-    PSVR(users[SVR_CID(svr)]->name, "recieved a IM message from '%s'",
+    PSVR(users[SVR_CID(svr)]->name, "received a IM message from '%s'",
 	MSG_VAL(msg));
 #endif
 
@@ -835,7 +835,7 @@ static void s_handle_mail(svr_t *svr)
 #ifdef DEBUG
     if (MSG_TYP(mail->msg) != IM)
     {
-	PSVR(users[SVR_CID(svr)]->name, "recieved a %s message from '%s'",
+	PSVR(users[SVR_CID(svr)]->name, "received a %s message from '%s'",
 	    tlv_str[MSG_TYP(mail->msg)],
 	    users[*((long *)MSG_VAL(mail->msg))]->name);
     }
@@ -1113,7 +1113,7 @@ static void s_init(svr_t *svr)
     SVR_CID(svr) = -1; /* initiating client id */
     while (SVR_STATUS(svr) == SSTAT_INIT)
     {
-	/* recieve login/register request from client */
+	/* receive login/register request from client */
 	ASSERT(msg_recv(&in_msg, SVR_SCK(svr)), ERRT_RECV, ERRA_PANIC, 
 	    STR_NIL, "could not receive data from users");
 

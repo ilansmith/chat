@@ -251,7 +251,7 @@ static cmd_f c_get_command(int num, ...)
     ASSERT_INPUT((i == num) && (cmd != cmd_help), "%s - invalid use of command",
 	input_command);
 
-    /* recieve parameters */
+    /* receive parameters */
     switch (cmd)
     {
     case cmd_connect:
@@ -581,7 +581,7 @@ static void c_cfriends_init(void)
     while (more_friends)
     {
 	ASSERT(msg_recv(&in_msg, csocket), ERRT_RECV, ERRA_PANIC, "could not "
-	    "recieve friend data\n" STR_CLOST_CONNECTION);
+	    "receive friend data\n" STR_CLOST_CONNECTION);
 	type = MSG_TYP(&in_msg);
 
 	switch (type)
@@ -611,7 +611,7 @@ static void c_cfriends_init(void)
 	}
     }
 #ifdef DEBUG
-    PCLIENT("recieved list of friends");
+    PCLIENT("received list of friends");
 #endif
 }
 
@@ -1067,7 +1067,7 @@ static void c_add_friend(void)
 	break;
     default:
 #ifdef DEBUG
-	printf("recieved a bad message:\n");
+	printf("received a bad message:\n");
 	printf("MSG_TYP(&in_msg): %i\n", MSG_TYP(&in_msg));
 	printf("MSG_LEN(&in_msg): %i\n", MSG_LEN(&in_msg));
 #endif
@@ -1315,7 +1315,7 @@ static void c_loop(void)
 		break;
 	    default:
 #ifdef DEGUB
-		printf("recieved a bad message:\n");
+		printf("received a bad message:\n");
 		printf("MSG_TYP(&in_msg): %i\n", MSG_TYP(&in_msg));
 		printf("MSG_LEN(&in_msg): %i\n", MSG_LEN(&in_msg));
 #endif
