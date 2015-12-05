@@ -23,5 +23,5 @@ clean:
 	rm -f *.o
 
 cleanall:
-	rm -f *.o *.exe tags test
+	rm -f *.o tags server client
 
