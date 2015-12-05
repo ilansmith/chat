@@ -9,38 +9,6 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <stdio.h>
-/*
-#define SIGNIN 0x00000001
-#define SIGNIN_SUCCESS 0x00000002
-#define SIGNIN_FAIL 0x00000003
-#define SIGNOUT 0x00000004
-#define SIGNOUT_SUCCESS 0x00000005
-#define SIGNOUT_FAIL 0x00000006
-#define LOGIN 0x00000007
-#define LOGIN_SUCCESS 0x00000008
-#define LOGIN_FAIL 0x00000009
-#define REGISTER 0x0000000A
-#define REGISTER_SUCCESS 0x0000000B
-#define REGISTER_FAIL 0x0000000C
-#define UNREGISTER 0x0000000D
-#define SEARCH 0x0000000F
-#define SEARCH_SUCCESS 0x00000010
-#define SEARCH_FAIL 0x00000011
-#define CLIENT_ADD_REQ 0x00000012
-#define SERVER_ADD_REQ 0x00000013
-#define CLIENT_ADD_ACCEPT 0x00000014
-#define CLIENT_ADD_REJECT 0x00000015
-#define SERVER_ADD_ACCEPT 0x00000016
-#define SERVER_ADD_REJECT 0x00000017
-#define SERVER_ADD_FAIL 0x00000018
-#define REMOVE 0x00000019
-#define FRIENDS_REQUEST 0x0000001A
-#define FRIENDS_REPLY 0x0000001B
-#define CHAT_REQ 0x0000001C
-#define CHAT_ACK 0x0000001D
-#define PEER_HELLO 0x0000001E
-#define CHAT_REJ 0x0000001F
-*/
 
 #define STATUS_CONNECTED 1
 #define STATUS_DISCONNECTED 0
@@ -52,6 +20,8 @@
 #define CONN_PROTO_HNDL "tcp"
 #define CONN_PORT 5555
 
+
+#define STR_NIL ""
 #define STR_MAX_COMMAND_LENGTH 11
 #define STR_MAX_NAME_LENGTH 9
 #define STR_MAX_HOST_NAME_LENGTH 255
@@ -81,34 +51,23 @@
 #define ERRT_EXTRACTMSG 0x11
 #define ERRT_PEERINSERT 0x12
 
-/*
-#define ERRS_ALLOC "could not perform memory allocation"
-#define ERRS_REALLOC "could not increase user's array length"
-#define ERRS_SOCKET "could not create socket"
-#define ERRS_BIND "could not bind socket"
-#define ERRS_LISTEN "could not listen on socket"
-#define ERRS_ACCEPT "could not accept on socekt"
-#define ERRS_CONNECT "could not connect"
-#define ERRS_RECV "could not recieve data"
-#define ERRS_SEND "could not send data"
-#define ERRS_GETPROTOBYNAME "could not map connection protocol to integer"
-#define ERRS_READ_INPUT "did no receive a valid input"
-#define ERRS_INET_ADDR "could not proccess IP address"
-#define ERRS_SIGNIN "unsuccessful sign in attempt"
-#define ERRS_LOGIN "unsuccessful login attempt"
-*/
-
 #define ERRA_PANIC 0x1
 #define ERRA_WARN 0x2
 
-#ifdef _MAIN_THREAD_
+#ifdef _DAEMON_
 #define PANIC_EXIT exit(1);
-#else
+#endif
+
+#ifdef _SERVER_
 #define PANIC_EXIT s_exit(svr, 1);
 #endif
 
+#ifdef _CLIENT_
+#define PANIC_EXIT c_panic();
+#endif
+
 #define ERROR_HANDLE(ACTION, ...)                                            \
-        printf("error "),                                                    \
+        printf("\nerror: "),                                                 \
         ##__VA_ARGS__;                                                       \
 	switch (ACTION)                                                      \
         {                                                                    \
