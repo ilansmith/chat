@@ -4,11 +4,8 @@
 #ifdef DEBUG
 char *tlv_str[] = {
     "CONNECT",
-    "CONNECT_SUCCESS",
     "CONNECT_FAIL",
     "DISCONNECT",
-    "DISCONNECT_SUCCESS",
-    "DISCONNECT_FAIL",
     "LOGIN",
     "LOGIN_SUCCESS",
     "LOGIN_FAIL",
@@ -16,20 +13,11 @@ char *tlv_str[] = {
     "LOGOUT",
     "REGISTER",
     "REGISTER_SUCCESS",
-    "REGISTER_FAIL",
+    "REGISTER_FAIL_REREGISTER",
+    "REGISTER_FAIL_CAPACITY",
     "UNREGISTER",
     "UNREGISTER_SUCCESS",
     "UNREGISTER_FAIL",
-    "SEARCH",
-    "SEARCH_SUCCESS",
-    "SEARCH_FAIL",
-    "CLIENT_ADD_REQ",
-    "SERVER_ADD_REQ",
-    "CLIENT_ADD_ACCEPT",
-    "CLIENT_ADD_REJECT",
-    "SERVER_ADD_ACCEPT",
-    "SERVER_ADD_REJECT",
-    "SERVER_ADD_FAIL",
     "REMOVE",
     "FRIEND_ADD",
     "FRIEND_ADD_SUCCESS",
@@ -41,11 +29,9 @@ char *tlv_str[] = {
     "FRIEND_UNREGISTER",
     "COLLEGUE_ADD",
     "COLLEGUE_REMOVE",
-    "COLLEGUE_UNREGISTER",
     "IM",
     "CHAT_REQ",
     "CHAT_ACC",
-    "PEER_HELLO",
     "CHAT_REJ",
 };
 #endif
@@ -106,15 +92,17 @@ ssize_t msg_recv(msg_t *msg, sck_t sck)
     char msgbuf[MSG_MAX_VAL_LN];
 
     memset(msgbuf, 0, MSG_MAX_VAL_LN);
-    if (((ret += recv(sck, &type, sizeof(tlv_t), 0)) < 0) ||
-	((ret += recv(sck, &length, sizeof(int), 0)) < 0) ||
+    if (((ret += recv(sck, &type, sizeof(tlv_t), 0)) <= 0) ||
+	((ret += recv(sck, &length, sizeof(int), 0)) <= 0) ||
 	(length && (ret += recv(sck, msgbuf, length, 0)) < 0))
     {
-	return (ssize_t)ret;
+	goto Exit;
     }
 
     msg_set_data(msg, type, length, msgbuf);
-    return ret;
+
+Exit:
+    return ret > 0 ? ret : -1;
 }
 
 /* sending a msg_t via a socket */
