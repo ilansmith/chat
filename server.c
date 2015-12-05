@@ -115,15 +115,19 @@ static void s_exit(svr_t *svr, int status)
 	/* no need to verify dummy user is connected */
 	users[SVR_CID(svr)]->connected = 0;
 	CS_END(users[SVR_CID(svr)]->mutex);
+#ifdef DEBUG
 	PSVR(users[SVR_CID(svr)]->name, "user '%s' logged out",
 	    users[SVR_CID(svr)]->name);
+#endif
     }
 
     close(SVR_SCK(svr));
     free(svr);
 
 Exit:
+#ifdef DEBUG
     PSVR(STR_NIL, "disconnected");
+#endif
     pthread_exit(&status);
 }
 
@@ -186,8 +190,10 @@ static int s_mail_post(user_t *sender, user_t *receiver, tlv_t type)
 	(type != COLLEGUE_ADD) && (type != COLLEGUE_REMOVE)))
 
     {
+#ifdef DEBUG
 	PSVR(sender->name, "could not post a %s message to '%s' who is offline",
 	    tlv_str[type], receiver->name);
+#endif
 	return 0;
     }
 
@@ -217,9 +223,10 @@ static int s_mail_post(user_t *sender, user_t *receiver, tlv_t type)
 	    STR_MAX_NAME_LENGTH), buffer);
 	break;
     default:
+#ifdef DEBUG
 	PSVR(sender->name, "unknown type of message to be posted to '%s'", 
 	    receiver->name);
-
+#endif
 	mail_free(new_mail);
 	return -1;
     }
@@ -533,7 +540,7 @@ static void s_command_send_im(svr_t *svr, msg_t *msg)
     CS_START(users[fid]->mutex);
     if (users[fid] == DUMMY_USER)
 	return;
-    ASSERT(new_mail = mail_alloc(), ERRT_ALLOC, ERRA_WARN, 
+    ASSERT((int)(new_mail = mail_alloc()), ERRT_ALLOC, ERRA_WARN, 
 	users[SVR_CID(svr)]->name, "could not allocte an instant message to "
 	"send to '%s'", users[fid]->name);
 
@@ -652,8 +659,10 @@ static void s_command_logout(svr_t *svr)
 
 	s_sweep_collegues(svr, users[SVR_CID(svr)], FRIEND_LOGOUT);
 
+#ifdef DEBUG
 	PSVR(users[SVR_CID(svr)]->name, "user '%s' logged out",
 	    users[SVR_CID(svr)]->name);
+#endif
 	SVR_CID(svr) = -1;
 	SVR_STATUS(svr) = SSTAT_INIT;
 }
@@ -894,7 +903,9 @@ static void s_serve(svr_t *svr)
 
     /* serve */
     SVR_STATUS(svr) = SSTAT_SERVE;
+#ifdef DEBUG
     PSVR(users[SVR_CID(svr)]->name, "ready to chat");
+#endif
     while (serve)
     {
 	switch (SVR_STATUS(svr))
@@ -999,8 +1010,10 @@ static int s_register(char *cname)
 	{
 	    first_free_index = -1;
 	    CS_END(mtx_usrcnt);
+#ifdef DEBUG
 	    PSVR(STR_NIL, "register faild, user '%s' is already registered",
 		cname);
+#endif
 
 	    return  -1;
 	}
@@ -1014,15 +1027,19 @@ static int s_register(char *cname)
     if (!(users[first_free_index] = user_alloc(cname, first_free_index)))
     {
 	CS_END(mtx_usrcnt);
+#ifdef DEBUG
 	PSVR (STR_NIL, "memory allocation failure, user %s could not be "
 	    "registered", cname);
+#endif
 
 	return -1;
     }
 
     usr_count++;
     CS_END(mtx_usrcnt);
+#ifdef DEBUG
     PSVR(STR_NIL, "user '%s' registered successfuly", cname);
+#endif
 
     return 0;
 }
@@ -1046,7 +1063,9 @@ static int s_unregister(svr_t *svr, char *cname)
 	/* user[i] is the user to unregister but is logged in */
 	if (users[i]->connected)
 	{
+#ifdef DEBUG
 	    PSVR(STR_NIL, "unregister faild, user '%s' is logged in", cname);
+#endif
 	    CS_END(users[i]->mutex);
 	    return  -1;
 	}
@@ -1064,14 +1083,18 @@ static int s_unregister(svr_t *svr, char *cname)
 	s_sweep_collegues(svr, temp, FRIEND_UNREGISTER);
 
 	user_free(temp);
+#ifdef DEBUG
 	PSVR(STR_NIL, "user '%s' has been unregistered", cname);
+#endif
 
 	SVR_CID(svr) = -1;
 	SVR_STATUS(svr) = SSTAT_INIT;
 	return 0;
     }
 
+#ifdef DEBUG
     PSVR(STR_NIL, "unregister faild, user '%s' is not registered", cname);
+#endif
     return -1;
 }
 
@@ -1106,18 +1129,24 @@ static void s_init(svr_t *svr)
 	    {
 	    case SSTAT_LOGIN:
 		msg_type = LOGIN_SUCCESS;
+#ifdef DEBUG
 		PSVR(cname, "user '%s' logged in", cname);
+#endif
 		break;
 	    case SSTAT_RELOGIN:
 		msg_type = LOGIN_LOGGEDIN;
 		SVR_STATUS(svr) = SSTAT_INIT;
+#ifdef DEBUG
 		PSVR(STR_NIL, "login failed, user '%s' is already logged in",
 		    cname);
+#endif
 		break;
 	    case SSTAT_INIT:
 		msg_type = LOGIN_FAIL;
+#ifdef DEBUG
 		PSVR(STR_NIL, "login failed, user '%s' is not registered",
 		    cname);
+#endif
 		break;
 	    default:
 		/*TODO: sanity check */
@@ -1154,7 +1183,9 @@ static void s_init(svr_t *svr)
 	    break;
 
 	default:
+#ifdef DEBUG
 	    PSVR(STR_NIL, "undefined request of service");
+#endif
 	    msg_type = CONNECT_FAIL;
 	    SVR_STATUS(svr) = SSTAT_ERROR;
 	    break;
@@ -1170,7 +1201,9 @@ void *s_handle(void *server)
 {
     svr_t *svr = (svr_t *)server;
 
+#ifdef DEBUG
     PSVR(STR_NIL, "connected");
+#endif
     SVR_STATUS(svr) = SSTAT_INIT;
     while (SVR_STATUS(svr) != SSTAT_DISCONNECT)
     {
