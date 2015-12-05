@@ -1,4 +1,4 @@
-#define _MAIN_THREAD_
+#define _CLIENT_
 
 #include <stdlib.h>
 #include <sys/types.h>
@@ -29,6 +29,8 @@
 #define PRINT_PROMPT if (*cname) printf("%s", cname); printf("> ");          \
     fflush(stdout)
 
+#define STR_CLOST_CONNECTION "connection with the server has been lost"
+    
 #define REPEAT_IP "-"
 #define DEFAULT_SVR_NM "localhost"
 #define DEFAULT_SVR_IP "127.0.0.1"
@@ -522,6 +524,27 @@ static void c_init(int argc, char *argv[])
     return;
 }
 
+static void c_cfriends_clean(void)
+{
+    cfriend_t **friend = NULL;
+
+    friend = &friends_loggedon;
+    while (*friend)
+	c_cfriend_extract(friend);
+
+    friend = &friends_loggedoff;
+    while (*friend)
+	c_cfriend_extract(friend);
+}
+
+static void c_panic()
+{
+    PCLIENT("\nexiting now...");
+    close(csocket);
+    c_cfriends_clean();
+    exit(0);
+}
+
 static void c_cfriends_init(void)
 {
     msg_t in_msg;
@@ -534,7 +557,7 @@ static void c_cfriends_init(void)
     while (more_friends)
     {
 	ASSERT(msg_recv(&in_msg, csocket), ERRT_RECV, ERRA_PANIC, "could not "
-	    "recieve friend data");
+	    "recieve friend data\n" STR_CLOST_CONNECTION);
 	type = MSG_TYP(&in_msg);
 
 	switch (type)
@@ -702,7 +725,7 @@ static void c_connect(void)
     }
 }
 
-static void c_disconenct(void)
+static void c_disconnect(void)
 {
     cmd_f cmd;
     msg_t out_msg;
@@ -748,12 +771,27 @@ static void c_register(char *name)
     msg_t msg;
 
     msg_set_data(&msg, REGISTER, strlen(name), name);
-    msg_send(&msg, csocket);
+    ASSERT(msg_send(&msg, csocket), ERRT_SEND, ERRA_PANIC, "could not send "
+	"registration request\n" STR_CLOST_CONNECTION);
 
-    msg_recv(&msg, csocket);
-    PCLIENT("user '%s' %s", name, (MSG_TYP(&msg) == REGISTER_SUCCESS ?
-	"was successfuly registered" :
-	"is already registered, can not re-register"));
+    ASSERT(msg_recv(&msg, csocket), ERRT_RECV, ERRA_PANIC, "could not "
+	"complete registration\n" STR_CLOST_CONNECTION);
+
+    switch (MSG_TYP(&msg))
+    {
+    case REGISTER_SUCCESS:
+	PCLIENT("user '%s' was successfuly registered", name);
+	break;
+    case REGISTER_FAIL_REREGISTER:
+	PCLIENT("user '%s' is already registered, can not re-gegister", name);
+	break;
+    case REGISTER_FAIL_CAPACITY:
+	PCLIENT("user capacity is full, '%s' could not be registered", name);
+	break;
+    default:
+	/* TODO: sanity check*/
+	break;
+    }
 }
 
 static void c_unregister(char *name)
@@ -761,9 +799,12 @@ static void c_unregister(char *name)
     msg_t msg;
 
     msg_set_data(&msg, UNREGISTER, strlen(name), name);
-    msg_send(&msg, csocket);
+    ASSERT(msg_send(&msg, csocket), ERRT_SEND, ERRA_PANIC, "could not "
+	"send unregistration request\n" STR_CLOST_CONNECTION);
 
-    msg_recv(&msg, csocket);
+    ASSERT(msg_recv(&msg, csocket), ERRT_RECV, ERRA_PANIC, "could not "
+	"complete unregistration\n" STR_CLOST_CONNECTION);
+
     PCLIENT("user '%s' %s", name, (MSG_TYP(&msg) == UNREGISTER_SUCCESS ?
 	"was successfuly unregistered" : "could not be unregistered"));
 }
@@ -784,8 +825,10 @@ static void c_login(void)
     {
     case cmd_login:
 	msg_set_data(&out_msg, LOGIN, strlen(input_param[0]), input_param[0]);
-	msg_send(&out_msg, csocket);
-	msg_recv(&in_msg, csocket);
+	ASSERT(msg_send(&out_msg, csocket), ERRT_SEND, ERRA_PANIC, "could "
+	    "not send a login request\n" STR_CLOST_CONNECTION);
+	ASSERT(msg_recv(&in_msg, csocket), ERRT_RECV, ERRA_PANIC, "could not "
+	    "complete unregistration\n" STR_CLOST_CONNECTION);
 
 	switch(MSG_TYP(&in_msg))
 	{
@@ -815,7 +858,7 @@ static void c_login(void)
 	c_unregister(input_param[0]);
 	break;
     case cmd_disconnect:
-	c_disconenct();
+	c_disconnect();
 	break;
     case cmd_help:
 	c_help();
@@ -829,42 +872,20 @@ static void c_login(void)
     }
 }
 
-static void c_cfriends_clean(void)
-{
-    cfriend_t **friend = NULL;
-
-    friend = &friends_loggedon;
-    while (*friend)
-	c_cfriend_extract(friend);
-
-    friend = &friends_loggedoff;
-    while (*friend)
-	c_cfriend_extract(friend);
-}
-
-static int c_logout(void)
+static void c_logout(void)
 {
     msg_t out_msg;
-    int success;
 
     c_cfriends_clean();
     msg_set_data(&out_msg, LOGOUT, 0, NULL);
-    success = msg_send(&out_msg, csocket);
+    ASSERT(msg_send(&out_msg, csocket), ERRT_SEND, ERRA_PANIC, "could not "
+	"send a login request\n STR_CLOST_CONNECTION");
 
-    if (success == -1)
-    {
-	PCLIENT("users '%s' failed to logout", cname);
-    }
-    else
-    {
-	PCLIENT("user '%s' logged out succesfully", cname);
-	cstatus = CSTAT_LOGIN;
-    }
-
-    return success;
+    PCLIENT("user '%s' logged out succesfully", cname);
+    cstatus = CSTAT_LOGIN;
 }
 
-static int c_send_im(void)
+static void c_send_im(void)
 {
     cfriend_t *friend = NULL;
     msg_t out_msg;
@@ -874,7 +895,7 @@ static int c_send_im(void)
     if (!strncmp(cname, input_param[0], STR_MAX_NAME_LENGTH))
     {
 	PCLIENT("can't send yourself an instant message");
-	return 0;
+	return;
     }
 
     for (i = 0; i < 2; i++)
@@ -899,14 +920,14 @@ static int c_send_im(void)
     if (!friend)
     {
 	PCLIENT("user '%s' is not on your list of friends", input_param[0]);
-	return 0;
+	return;
     }
 
     if (!i)
     {
 	PCLIENT("user '%s' is currently offline, try again later", 
 	    input_param[0]);
-	return 0;
+	return;
     }
     
     /* TODO: check coppied length for bug */
@@ -917,7 +938,8 @@ static int c_send_im(void)
 	MIN(strlen(input_param[1]), INPUT_BUFFER_SZ - sizeof(long)));
     msg_set_data(&out_msg, IM, text_len + sizeof(long), buffer);
 
-    return msg_send(&out_msg, csocket);
+    ASSERT(msg_send(&out_msg, csocket), ERRT_SEND, ERRA_PANIC, "could not "
+	"send an im\n" STR_CLOST_CONNECTION);
 }
 
 static void c_send_chat()
@@ -982,8 +1004,10 @@ static void c_add_friend(void)
     }
 
     msg_set_data(&out_msg, FRIEND_ADD, strlen(input_param[0]), input_param[0]);
-    msg_send(&out_msg, csocket);
-    msg_recv(&in_msg, csocket);
+    ASSERT(msg_send(&out_msg, csocket), ERRT_SEND, ERRA_PANIC, "could not "
+	"add a new friend\n" STR_CLOST_CONNECTION);
+    ASSERT(msg_recv(&in_msg, csocket), ERRT_RECV, ERRA_PANIC, "could not "
+	"receive friend information\n" STR_CLOST_CONNECTION);
 
     switch (MSG_TYP(&in_msg))
     {
@@ -1056,7 +1080,8 @@ static void c_remove_friend(void)
     }
 
     msg_set_data(&out_msg, FRIEND_REMOVE, sizeof(long), &((*fptr)->fid));
-    msg_send(&out_msg, csocket);
+    ASSERT(msg_send(&out_msg, csocket), ERRT_SEND, ERRA_PANIC, "could not "
+	"remove a friend\n" STR_CLOST_CONNECTION);
 
     c_cfriend_extract(fptr);
     PCLIENT("user '%s' has been removed from your list of friends",
@@ -1236,6 +1261,8 @@ static void c_loop(void)
 	{
 	    msg_recv(&in_msg, csocket);
 
+	    ASSERT(msg_recv(&in_msg, csocket), ERRT_RECV, ERRA_PANIC, "could "
+		"not receive data from the server\n" STR_CLOST_CONNECTION);
 	    switch (MSG_TYP(&in_msg))
 	    {
 	    case IM:
