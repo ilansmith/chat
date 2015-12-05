@@ -384,36 +384,49 @@ static void c_usage(char *binary)
 
 static void c_help()
 {
-#define HELP_CMD_PRINT(CMD) printf("> " CMD "\n");
+#define FIELD_LENGTH 30
+#define HELP_CMD_PRINT(CMD, DSC) printf("%-*s - %s" "\n", FIELD_LENGTH, "> "  \
+	CMD, DSC);
 #define AVAILABLE_COMMANDS printf("available commands are:\n") 
 
 #ifndef DEBUG
-#define HELP_CMD_CONNECT HELP_CMD_PRINT("connect") 
+#define HELP_CMD_CONNECT HELP_CMD_PRINT("connect", "connect to the chat "     \
+	"network") 
 #else
 #define HELP_CMD_CONNECT                                                      \
-	HELP_CMD_PRINT("connect <destination>");                              \
+	HELP_CMD_PRINT("connect <destination>", "");                          \
 	printf("    where:\n");                                               \
         printf("    <destination> is: ip_address or\n");                      \
 	printf("                      host_name  or\n");                      \
 	printf("                      - same as previous connection\n") 
 #endif
 
-#define HELP_CMD_REGISTER HELP_CMD_PRINT("register <user_name>") 
-#define HELP_CMD_UNREGISTER HELP_CMD_PRINT("unregister <user_name>") 
-#define HELP_CMD_LOGIN HELP_CMD_PRINT("login <user_name>") 
-#define HELP_CMD_LOGOUT HELP_CMD_PRINT("logout")
-#define HELP_CMD_DISCONNECT HELP_CMD_PRINT("disconnect")
-#define HELP_CMD_EXIT HELP_CMD_PRINT("exit") 
-#define HELP_CMD_YES HELP_CMD_PRINT("yes")
-#define HELP_CMD_NO HELP_CMD_PRINT("no")
+#define HELP_CMD_REGISTER HELP_CMD_PRINT("register <user_name>", "register a "\
+	"new user") 
+#define HELP_CMD_UNREGISTER HELP_CMD_PRINT("unregister <user_name>",          \
+	"unregister an existing user") 
+#define HELP_CMD_LOGIN HELP_CMD_PRINT("login <user_name>", "login as the "    \
+	"specified user")
+#define HELP_CMD_LOGOUT HELP_CMD_PRINT("logout", "logout the current user")
+#define HELP_CMD_DISCONNECT HELP_CMD_PRINT("disconnect", "disconnect from "   \
+	"the chat network")
+#define HELP_CMD_EXIT HELP_CMD_PRINT("exit", "exit the program") 
+#define HELP_CMD_YES HELP_CMD_PRINT("yes", "accept")
+#define HELP_CMD_NO HELP_CMD_PRINT("no", "reject")
 
-#define HELP_CMD_FRIENDS HELP_CMD_PRINT("friends [online | offline]")
-#define HELP_CMD_ADD HELP_CMD_PRINT("add <friend_name>")
-#define HELP_CMD_REM HELP_CMD_PRINT("remove <friend_name>")
-#define HELP_CMD_IM HELP_CMD_PRINT("im <friend_name> <message>")
-#define HELP_CMD_CHAT HELP_CMD_PRINT("chat <friend_name>")
-#define HELP_CMD_ACCEPT HELP_CMD_PRINT("accept <friend_name>")
-#define HELP_CMD_REJECT HELP_CMD_PRINT("reject <friend_name>")
+#define HELP_CMD_FRIENDS HELP_CMD_PRINT("friends [online | offline]", "view " \
+	"your list of friends")
+#define HELP_CMD_ADD HELP_CMD_PRINT("add <friend_name>", "add a user to your "\
+	"list of friends")
+#define HELP_CMD_REM HELP_CMD_PRINT("remove <friend_name>", "remove a user "  \
+	"from your list of friends")
+#define HELP_CMD_IM HELP_CMD_PRINT("im <friend_name> <message>", "send an "   \
+	"instant message")
+#define HELP_CMD_CHAT HELP_CMD_PRINT("chat <friend_name>", "chat with a user")
+#define HELP_CMD_ACCEPT HELP_CMD_PRINT("accept <friend_name>", "accept an "   \
+	"incoming chat request")
+#define HELP_CMD_REJECT HELP_CMD_PRINT("reject <friend_name>", "reject an "   \
+	"incoming chat request")
 #define HELP_CMD_
 
     switch (cstatus)
@@ -520,9 +533,8 @@ static void c_init(int argc, char *argv[])
     PRINT("*           %c IAS, April 2004           *", ASCII_COPYRIGHT);
     PRINT("*****************************************");
     PRINT("");
+    PRINT("");
     PRINT("type 'help' at any stage for a list of available commands");
-    PRINT("");
-    PRINT("");
 
 #ifdef DEBUG
     PRINT("DEBUG mode");
