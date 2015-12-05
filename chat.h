@@ -1,8 +1,6 @@
 #ifndef _CHAT_H_
 #define _CHAT_H_
 
-#define DEBUG
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>

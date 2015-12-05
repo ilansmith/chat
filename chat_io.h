@@ -56,7 +56,7 @@ typedef enum {
 #define MSG_VAL_COLLEGUE_NM(MSG) ((char *)(MSG_VAL(MSG) + sizeof(long)))
 
 /* colours */
-#define COL_RESET "\033[00;00;00m"
+#define COL_RESET "\033[00;00m"
 /* #define COL_BLACK "\033[00;30m" */
 #define COL_BRIGHT_BLACK "\033[01;30m"
 /* #define COL_RED "\033[00;31m" */
@@ -74,7 +74,7 @@ typedef enum {
 /* #define COL_GREY "\033[00;37m" */
  #define COL_BRIGHT_GREY "\033[01;37m"
 /* #define COL_WHITE "\033[00;38m" */
-#define COL_BRIGHT_WHITE "\033[01;38m"
+#define COL_BRIGHT_WHITE "\033[01m"
 #define COL_BG_BLACK "\033[00;40m"
 #define COL_BG_BRIGHT_RED "\033[01;41m"
 /* #define COL_BG_BRIGHT_GREY "\033[01;47m" */

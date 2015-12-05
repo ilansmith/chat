@@ -1,26 +1,40 @@
-all: server client 
+CC=gcc
+CLIENT=client
+SERVER=server
 
-server: daemon.o server.o chat_io.o
-	gcc -g -Wall -o $@ daemon.o server.o chat_io.o -lpthread 
+ifeq ($(DEBUG),)
+  # by default debug is on
+  DEBUG=y
+endif
 
-daemon.o: chat.h server.h daemon.c
-	gcc -g -Wall -o $@ -c daemon.c
+all: $(SERVER) $(CLIENT)
 
-server.o: chat.h server.h server.c
-	gcc -g -Wall -o $@ -c server.c
+CFLAGS=-Wall -Werror
+LDLIBS=-lpthread
 
-client: client.o chat_io.o
-	gcc -g -Wall -o $@ client.o chat_io.o
+ifeq ($(DEBUG),y)
+  CFLAGS+=-g -DDEBUG
+endif
 
-client.o: chat.h client.h client.c
-	gcc -g -Wall -o $@ -c client.c
+# server
+SERVER_OBJS=daemon.o server.o chat_io.o
 
-chat_io.o: chat.h chat_io.h chat_io.c
-	gcc -g -Wall -o $@ -c chat_io.c
-	
+$(SERVER): $(SERVER_OBJS)
+	$(CC) -o $@ $(LDLIBS) $^
+
+# client
+CLIENT_OBJS=client.o chat_io.o
+
+$(CLIENT): $(CLIENT_OBJS)
+	$(CC) -o $@ $^
+
+# rules
+%.o: %.c
+	$(CC) -o $@ $(CFLAGS) -c $<
+
 clean:
 	rm -f *.o
 
-cleanall:
-	rm -f *.o tags server client
+cleanall: clean
+	rm -f *.o tags $(SERVER) $(CLIENT)
 

@@ -413,14 +413,13 @@ static void s_sweep_mailbox(svr_t *svr, user_t *user)
 {
 /* validate the the message gets handled in the current SVR_STATUS(svr) */
 #define VALIDATE_STATE(PRED) if (!(PRED))  \
-        {                                  \
-	    mailptr = &((*mailptr)->next); \
-	    break;                         \
-	}
+    {                                  \
+        mailptr = &((*mailptr)->next); \
+        break;                         \
+    }
 
     mail_t **mailptr = &(user->mailbox);
     msg_t *msg = NULL;
-    long i;
 
     /* critical section protected by the calling function */
     while (*mailptr)
@@ -450,7 +449,7 @@ static void s_sweep_mailbox(svr_t *svr, user_t *user)
 
 	    ASSERT(s_scollegue_insert(user, *((long *)(msg->value))),
 		ERRT_PEERINSERT, ERRA_WARN, user->name, "could not add '%s' to "
-		"list of collegues", users[i]->name);
+		"list of collegues", user->name);
 	    mail_delete(mailptr);
 	    break;
 	/* done at: logon */
