@@ -1,7 +1,7 @@
 all: server client 
 
 server: daemon.o server.o chat_io.o
-	gcc -g -Wall -o $@ daemon.o server.o chat_io.o -l pthread 
+	gcc -g -Wall -o $@ daemon.o server.o chat_io.o -lpthread 
 
 daemon.o: chat.h server.h daemon.c
 	gcc -g -Wall -o $@ -c daemon.c
