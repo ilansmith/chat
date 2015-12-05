@@ -92,17 +92,20 @@ ssize_t msg_recv(msg_t *msg, sck_t sck)
     char msgbuf[MSG_MAX_VAL_LN];
 
     memset(msgbuf, 0, MSG_MAX_VAL_LN);
-    if (((ret += recv(sck, &type, sizeof(tlv_t), 0)) <= 0) ||
-	((ret += recv(sck, &length, sizeof(int), 0)) <= 0) ||
-	(length && (ret += recv(sck, msgbuf, length, 0)) < 0))
-    {
-	goto Exit;
-    }
+    if (recv(sck, &type, sizeof(tlv_t), 0) != sizeof(tlv_t))
+	return -1;
+    ret += sizeof(tlv_t);
+
+    if ((recv(sck, &length, sizeof(int), 0) != sizeof(int)) || (length < 0))
+	return -1;
+    ret += sizeof(int);
+
+    if (length && (recv(sck, msgbuf, length, 0) != length))
+	return -1;
+    ret += length;
 
     msg_set_data(msg, type, length, msgbuf);
-
-Exit:
-    return ret > 0 ? ret : -1;
+    return ret;
 }
 
 /* sending a msg_t via a socket */
