@@ -22,8 +22,8 @@
 #define PSVR(NAME, FMT, ...) _PSVR(stdout, NAME, FMT, ##__VA_ARGS__);
 #define PSVRERR(NAME, FMT, ...) _PSVR(stderr, NAME, FMT, ##__VA_ARGS__);
 
-#define ASSERT(VALUE, ERROR, ACTION, NAME, FMT, ...) __ASSERT(VALUE, ERROR,   \
-	ACTION, PSVRERR(NAME, FMT, ##__VA_ARGS__))
+#define ASSERT(VALUE, ERROR, ACTION, NAME, FMT, ...) __ASSERT(((long)(VALUE)),\
+	ERROR, ACTION, PSVRERR(NAME, FMT, ##__VA_ARGS__))
 
 /* free a mail_t and the msg_t it wraps */
 static void mail_free(mail_t *mail)
@@ -532,7 +532,7 @@ static void s_command_send_im(svr_t *svr, msg_t *msg)
 	CS_START(users[fid]->mutex);
 	if (users[fid] == DUMMY_USER)
 		return;
-	ASSERT((int)(new_mail = mail_alloc()), ERRT_ALLOC, ERRA_WARN, 
+	ASSERT(new_mail = mail_alloc(), ERRT_ALLOC, ERRA_WARN, 
 		users[SVR_CID(svr)]->name, "could not allocte an instant " \
 		"message to send to '%s'", users[fid]->name);
 

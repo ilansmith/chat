@@ -54,37 +54,37 @@
 #define ERRA_WARN 0x2
 
 #ifdef _DAEMON_
-#define PANIC_EXIT exit(1);
+#define PANIC_EXIT exit(1)
 #endif
 
 #ifdef _SERVER_
-#define PANIC_EXIT s_exit(svr, 1);
+#define PANIC_EXIT s_exit(svr, 1)
 #endif
 
 #ifdef _CLIENT_
-#define PANIC_EXIT c_panic();
+#define PANIC_EXIT c_panic()
 #endif
 
-#define ERROR_HANDLE(ACTION, ...)                                             \
+#define ERROR_HANDLE(ACTION, ...) do {                                        \
 	SET_COLOUR(stderr, COLOUR_ERROR_PROMPT);                              \
-	fprintf(stderr, "\nerror:%s ", COL_RESET),                            \
+	fprintf(stderr, "\nerror:%s ", COL_RESET);                            \
 	SET_COLOUR(stderr, COLOUR_ERROR);                                     \
 	fprintf(stderr, " "),                                                 \
 	##__VA_ARGS__;                                                        \
 	SET_COLOUR(stderr, COL_RESET);                                        \
-	switch (ACTION)                                                       \
-	{                                                                     \
+	switch (ACTION) {                                                     \
 	case ERRA_PANIC:                                                      \
-		PANIC_EXIT                                                    \
+		PANIC_EXIT;                                                   \
 		break;                                                        \
 	case ERRA_WARN:                                                       \
 		break;                                                        \
-	}
+	}                                                                     \
+} while (0)
 
 #define FAIL_EQUAL_ZERO(VALUE, ACTION, ...)                                   \
 	if (!(VALUE)) {                                                       \
 		ERROR_HANDLE(ACTION, ##__VA_ARGS__);                          \
-	}
+	}                                                                     \
 
 #define FAIL_LESS_THAN_ZERO(VALUE, ACTION, ...)                               \
 	if ((VALUE) < 0) {                                                    \
@@ -96,7 +96,7 @@
 		ERROR_HANDLE(ACTION, ##__VA_ARGS__);                          \
 	}
 
-#define __ASSERT(VALUE, ERROR, ACTION, ...)                                   \
+#define __ASSERT(VALUE, ERROR, ACTION, ...) do {                              \
 	switch (ERROR) {                                                      \
 	case ERRT_ALLOC:                                                      \
 	case ERRT_REALLOC:                                                    \
@@ -121,7 +121,8 @@
 	case ERRT_SIGNIN:                                                     \
 		FAIL_NOT_EQUAL_ONE(VALUE, ACTION, ##__VA_ARGS__);             \
 		break;                                                        \
-	}
+	}                                                                     \
+} while (0)
 
 #define MIN(X, Y) ((X) <= (Y) ? (X) : (Y))
 #define MAX(X, Y) ((X) <= (Y) ? (Y) : (X))

@@ -87,7 +87,7 @@ void msg_free(msg_t *msg)
 /* recieving a msg_t via a socket */
 ssize_t msg_recv(msg_t *msg, sck_t sck)
 {
-	ssize_t ret = 0, length;
+	ssize_t ret = 0, length = 0;
 	tlv_t type;
 	char msgbuf[MSG_MAX_VAL_LN];
 

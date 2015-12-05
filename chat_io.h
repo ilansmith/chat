@@ -97,39 +97,45 @@ typedef enum {
 #define COLOUR_PEER COL_BRIGHT_MAGENTA 
 #define COLOUR_CLEAR COL_BRIGHT_WHITE
 
-#define COLOUR_RESET                                                          \
+#define COLOUR_RESET do {                                                     \
 	fprintf(stdout, "%s", COL_RESET);                                     \
 	fflush(stdout);                                                       \
 	fprintf(stderr, "%s", COL_RESET);                                     \
-	fflush(stderr);
+	fflush(stderr);                                                       \
+} while (0)
 
-#define SET_COLOUR(STREAM, COLOUR)                                            \
+#define SET_COLOUR(STREAM, COLOUR) do {                                       \
 	fprintf(STREAM, "%s%s", COL_BG_BLACK, COLOUR);                        \
-	fflush(STREAM);
+	fflush(STREAM);                                                       \
+} while (0)
 
-#define PRINT_FEEDBACK(FMT, ...)                                              \
+#define PRINT_FEEDBACK(FMT, ...) do {                                         \
 	SET_COLOUR(stdout, COLOUR_FEEDBACK);                                  \
 	fprintf(stdout, FMT "\n", ##__VA_ARGS__);                             \
-	SET_COLOUR(stdout, COLOUR_CLEAR);
+	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
+} while (0)
 
-#define PRINT_ERROR(FMT, ...)                                                 \
+#define PRINT_ERROR(FMT, ...) do {                                            \
 	SET_COLOUR(stderr, COLOUR_CLEAR);                                     \
 	SET_COLOUR(stderr, COL_BG_BRIGHT_RED);                                \
-	fprintf(stderr, "error:"),                                            \
+	fprintf(stderr, "error:");                                            \
 	SET_COLOUR(stderr, COLOUR_CLEAR);                                     \
 	SET_COLOUR(stderr, COL_YELLOW);                                       \
-	fprintf(stderr, " " FMT "\n", ##__VA_ARGS__),                         \
-	SET_COLOUR(stderr, COL_RESET);
+	fprintf(stderr, " " FMT "\n", ##__VA_ARGS__);                         \
+	SET_COLOUR(stderr, COL_RESET);                                        \
+} while (0)
 
-#define PRINT_INTRO(FMT, ...)                                                 \
+#define PRINT_INTRO(FMT, ...) do {                                            \
 	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
 	fprintf(stdout, FMT "\n", ##__VA_ARGS__);                             \
-	SET_COLOUR(stdout, COLOUR_CLEAR);
+	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
+} while (0)
 
-#define PRINT_DEBUG(FMT, ...);                                                \
+#define PRINT_DEBUG(FMT, ...); do {                                           \
 	SET_COLOUR(stdout, COLOUR_DEBUG);                                     \
 	fprintf(stdout, FMT "\n", ##__VA_ARGS__);                             \
-	SET_COLOUR(stdout, COL_RESET);
+	SET_COLOUR(stdout, COL_RESET);                                        \
+} while (0)
 
 typedef struct msg_t {
 	tlv_t type;

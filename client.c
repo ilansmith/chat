@@ -14,8 +14,8 @@
 #include "chat_io.h"
 #include "client.h"
 
-#define ASSERT(VALUE, ERROR, ACTION, FMT, ...) __ASSERT(VALUE, ERROR, ACTION, \
-		printf(FMT, ##__VA_ARGS__))
+#define ASSERT(VALUE, ERROR, ACTION, FMT, ...)                                \
+	__ASSERT(((long)(VALUE)), ERROR, ACTION, printf(FMT, ##__VA_ARGS__))
 
 #define STRING_TERMINATOR 0x0
 #define ASCII_BACKSPACE   0x8
@@ -26,7 +26,7 @@
 #define IS_WHITESPACE(X) (((X)==ASCII_TAB) || ((X)==ASCII_SPACE))
 #define ASCII_CHAT_SUBSET(X) (0x20 <= (X) && (X) <= 0x7e)
 
-#define PRINT_PROMPT                                                          \
+#define PRINT_PROMPT do {                                                     \
 	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
 	if (*cname) {                                                         \
 		SET_COLOUR(stdout, COLOUR_CLIENT_PROMPT);                     \
@@ -35,19 +35,21 @@
 	}                                                                     \
 	fprintf(stdout, "> ");                                                \
 	SET_COLOUR(stdout, COLOUR_CLIENT);                                    \
-	fflush(stdout);
+	fflush(stdout);                                                       \
+} while (0)
 
-#define PRINT_IM(NAME, MSG)                                                   \
+#define PRINT_IM(NAME, MSG) do {                                              \
 	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
 	fprintf(stdout, "\n");                                                \
 	SET_COLOUR(stdout, COLOUR_PEER_PROMPT);                               \
-	fprintf(stdout, NAME);                                                \
+	fprintf(stdout, "%s", NAME);                                          \
 	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
 	fprintf(stdout, ": ");                                                \
 	SET_COLOUR(stdout, COLOUR_PEER);                                      \
-	fprintf(stdout, MSG);                                                 \
+	fprintf(stdout, "%s", MSG);                                           \
 	fprintf(stdout, "\n");                                                \
-	SET_COLOUR(stdout, COLOUR_CLEAR);
+	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
+} while (0)
 
 #define STR_CLOST_CONNECTION "connection with the server has been lost"
 
@@ -58,9 +60,10 @@
 #define FRIENDS_ONLINE 1
 #define FRIENDS_OFFLINE 0
 
-#define EXIT(n)                                                               \
+#define EXIT(n) do {                                                          \
 	COLOUR_RESET;                                                         \
-	exit(n)
+	exit(n);                                                              \
+} while (0)
 
 static cstat_t cstatus;
 static sck_t csocket;
@@ -72,22 +75,22 @@ static char *input_param[PARAM_LIST_SZ];
 static cfriend_t *friends_loggedon;
 static cfriend_t *friends_loggedoff;
 static cmd_t commands[] = {
-	{CMD_HELP, cmd_help, 1},
-	{CMD_CONNECT, cmd_connect, 2},
-	{CMD_DISCONENCT, cmd_disconnect, 1},
-	{CMD_LOGIN, cmd_login, 4},
-	{CMD_LOGOUT, cmd_logout, 4},
-	{CMD_REGISTER, cmd_register, 1},
-	{CMD_UNREGISTER, cmd_unregister, 1},
-	{CMD_FRIENDS, cmd_friends, 1},
-	{CMD_ADD, cmd_add, 1},
-	{CMD_REMOVE, cmd_remove, 1},
-	{CMD_IM, cmd_im, 1},
-	{CMD_CHAT, cmd_chat, 2},
-	{CMD_EXIT, cmd_exit, 1},
-	{CMD_YES, cmd_yes, 1},
-	{CMD_NO, cmd_no, 1},
-	{EMPTY_STRING, cmd_error, 0}
+	{ CMD_HELP, cmd_help, 1 },
+	{ CMD_CONNECT, cmd_connect, 2 },
+	{ CMD_DISCONENCT, cmd_disconnect, 1 },
+	{ CMD_LOGIN, cmd_login, 4 },
+	{ CMD_LOGOUT, cmd_logout, 4 },
+	{ CMD_REGISTER, cmd_register, 1 },
+	{ CMD_UNREGISTER, cmd_unregister, 1 },
+	{ CMD_FRIENDS, cmd_friends, 1 },
+	{ CMD_ADD, cmd_add, 1 },
+	{ CMD_REMOVE, cmd_remove, 1 },
+	{ CMD_IM, cmd_im, 1 },
+	{ CMD_CHAT, cmd_chat, 2 },
+	{ CMD_EXIT, cmd_exit, 1 },
+	{ CMD_YES, cmd_yes, 1 },
+	{ CMD_NO, cmd_no, 1 },
+	{ EMPTY_STRING, cmd_error, 0 }
 };
 
 /* test wether prf is a prefix of str containing at least min characters
@@ -188,23 +191,26 @@ static cmd_f c_get_command(int num, ...)
 #define READ_PARAM ! 
 #define VERIFY_NO_EXTRA_PARAM
 
-#define ASSERT_INPUT(PRED, ESTR, ...)                                         \
+#define ASSERT_INPUT(PRED, ESTR, ...) do {                                    \
 	if (PRED) {                                                           \
 		PRINT_ERROR(ESTR "\n", ##__VA_ARGS__);                        \
 		return cmd_error;                                             \
-	}
+	}                                                                     \
+} while (0)
 
-#define ASSERT_PARAM(BUF, LEN, ESTR_NO_PARAM, ESTR_OVERWRITE)                 \
+#define ASSERT_PARAM(BUF, LEN, ESTR_NO_PARAM, ESTR_OVERWRITE) do {            \
 	tmp = inp;                                                            \
 	in_ret_val = c_input_parse(&inp, BUF, LEN);                           \
 	ASSERT_INPUT(!in_ret_val, ESTR_NO_PARAM);                             \
-	ASSERT_INPUT(in_ret_val == -1, "%s - " ESTR_OVERWRITE, tmp);
+	ASSERT_INPUT(in_ret_val == -1, "%s - " ESTR_OVERWRITE, tmp);          \
+} while (0)
 
-#define ASSERT_EXTRA_PARAM(BUF, ESTR)                                         \
+#define ASSERT_EXTRA_PARAM(BUF, ESTR) do {                                    \
 	tmp = inp;                                                            \
 	in_ret_val = c_input_parse(&inp, BUF, 0);                             \
 	ASSERT_INPUT(in_ret_val == -1, "'%s' - invalid parameter(s) for the " \
-		"%s command", tmp, ESTR);
+		"%s command", tmp, ESTR);                                     \
+} while (0)
 
 	va_list al;
 	cmd_f cmd;
@@ -386,25 +392,28 @@ static void c_usage(char *binary)
 static void c_help(void)
 {
 #define FIELD_LENGTH 30
-#define HELP_STATUS_PRINT(FMT, ...)                                           \
+#define HELP_STATUS_PRINT(FMT, ...) do {                                      \
 	SET_COLOUR(stdout, COLOUR_STATUS_PROMPT);                             \
 	fprintf(stdout, "\nstatus:");                                         \
 	SET_COLOUR(stdout, COLOUR_STATUS);                                    \
 	fprintf(stdout, " " FMT "\n", ##__VA_ARGS__);                         \
-	SET_COLOUR(stdout, COLOUR_CLEAR);
+	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
+} while (0)
 
-#define HELP_CMD_PRINT(CMD, DSC)                                              \
+#define HELP_CMD_PRINT(CMD, DSC) do {                                         \
 	fprintf(stdout, "%s%-*s%s - %s" "\n", COLOUR_HELP_CMD, FIELD_LENGTH,  \
 		"> " CMD, COLOUR_HELP, DSC);                                  \
-		SET_COLOUR(stdout, COLOUR_CLEAR);
+		SET_COLOUR(stdout, COLOUR_CLEAR);                             \
+} while (0)
 
-#define AVAILABLE_COMMANDS                                                    \
+#define AVAILABLE_COMMANDS do {                                               \
 	SET_COLOUR(stdout, COLOUR_AVAILABLE_CMDS);                            \
 	fprintf(stdout, "available commands are:\n");                         \
-	SET_COLOUR(stdout, COLOUR_CLEAR);
+	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
+} while (0)
 
 #ifdef DEBUG
-#define HELP_CMD_CONNECT                                                      \
+#define HELP_CMD_CONNECT do {                                                 \
 	HELP_CMD_PRINT("connect <destination>", "connect to the chat "        \
 		"network, where <destination> is either:");                   \
 	SET_COLOUR(stdout, COLOUR_HELP);                                      \
@@ -417,7 +426,8 @@ static void c_help(void)
 	fprintf(stdout, "%-*s    %s\n", FIELD_LENGTH, " ", "the character "   \
 		"'-': initially localhost, otherwise same as previous "       \
 		"destination");                                               \
-		SET_COLOUR(stdout, COLOUR_CLEAR);
+		SET_COLOUR(stdout, COLOUR_CLEAR);                             \
+} while (0)
 #else
 #define HELP_CMD_CONNECT HELP_CMD_PRINT("connect", "connect to the chat "     \
 		"network");
@@ -716,7 +726,7 @@ static void c_connect(void)
 		 * '-' */
 #endif
 		/* initiating client socket */
-		ASSERT((int)(prtp = getprotobyname(CONN_PROTO_INIT)),
+		ASSERT((prtp = getprotobyname(CONN_PROTO_INIT)),
 			ERRT_GETPROTOBYNAME, ERRA_PANIC,
 			"could not map connection protocol to integer");
 

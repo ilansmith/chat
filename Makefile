@@ -1,7 +1,7 @@
 CC=gcc
 CLIENT=client
 SERVER=server
-
+DEBUG=y
 ifeq ($(DEBUG),)
 # by default debug is on
 DEBUG=y
@@ -10,7 +10,7 @@ endif
 all: $(SERVER) $(CLIENT)
 
 CFLAGS=-Wall -Werror
-LDLIBS=-lpthread
+LDLIBS=-lpthread -pthread
 
 ifeq ($(DEBUG),y)
 CFLAGS+=-g -DDEBUG

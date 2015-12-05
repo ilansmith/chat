@@ -5,17 +5,20 @@
 #include <pthread.h>
 #include "server.h"
 
-#define PDMN(FMT, ...)                                                        \
+#define PDMN(FMT, ...) do {                                                   \
 	SET_COLOUR(stdout, COLOUR_DAEMON);                                    \
 	fprintf(stdout, "daemon: " FMT "\n", ##__VA_ARGS__);                  \
-	COLOUR_RESET;
+	COLOUR_RESET;                                                         \
+} while (0)
 
 #define ASSERT(VALUE, ERROR, ACTION, FMT, ...)                                \
-	__ASSERT(VALUE, ERROR, ACTION, fprintf(stderr, FMT, ##__VA_ARGS__));
+	__ASSERT(((long)(VALUE)), ERROR, ACTION, fprintf(stderr, FMT,         \
+		##__VA_ARGS__))
 
-#define EXIT(n)                                                               \
+#define EXIT(n) do {                                                          \
 	COLOUR_RESET;                                                         \
-	exit(n)
+	exit(n);                                                              \
+} while (0)
 
 user_t **users;
 user_t dummy_user;
@@ -100,9 +103,8 @@ static sck_t d_init(int argc, char *argv[])
 	dummy_user.mailbox = NULL;
 
 	/* initiating users array */
-	ASSERT((int)(users = (user_t **)calloc(MEMBERS_INIT_SZ,
-		sizeof(user_t*))), ERRT_ALLOC, ERRA_PANIC,
-		"could not perform memory allocation");
+	ASSERT(users = (user_t**)calloc(MEMBERS_INIT_SZ, sizeof(user_t*)),
+		ERRT_ALLOC, ERRA_PANIC, "could not perform memory allocation");
 
 	for (i = 0; i < MEMBERS_INIT_SZ; i++)
 		users[i] = DUMMY_USER;
@@ -110,9 +112,8 @@ static sck_t d_init(int argc, char *argv[])
 	usr_array_size = MEMBERS_INIT_SZ;
 
 	/* initiating the daemon socket */
-	ASSERT((int)(prtp = getprotobyname(CONN_PROTO_INIT)),
-		ERRT_GETPROTOBYNAME, ERRA_PANIC,
-		"could not map connection protocol to integer");
+	ASSERT(prtp = getprotobyname(CONN_PROTO_INIT), ERRT_GETPROTOBYNAME,
+		ERRA_PANIC, "could not map connection protocol to integer");
 	memset((char*)&svr_addr, 0, sizeof(sockaddr_in));
 	svr_addr.sin_family = AF_INET; /* set family to internet */
 	svr_addr.sin_addr.s_addr = INADDR_ANY; /* set the local IP address */
@@ -139,7 +140,7 @@ static void d_loop(sck_t daemon)
 
 	addr_len = sizeof(client_addr);
 	while (1) {
-		ASSERT((int)(svr = alloc_svr()), ERRT_ALLOC, ERRA_WARN,
+		ASSERT((svr = alloc_svr()), ERRT_ALLOC, ERRA_WARN,
 			"could not perform memory allocation");
 		ASSERT(SVR_SCK(svr) = accept(daemon, (sockaddr*)&client_addr,
 			&addr_len), ERRT_ACCEPT, ERRA_WARN,
