@@ -131,7 +131,7 @@ static sck_t d_init(int argc, char *argv[])
 /* daemon loop function */
 static void d_loop(sck_t daemon)
 {
-    int addr_len;
+    socklen_t addr_len;
     sockaddr_in client_addr;
     pthread_t thread;
     svr_t *svr;
