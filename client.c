@@ -811,7 +811,7 @@ static void c_register(char *name)
 	PCLIENT("user '%s' was successfuly registered", name);
 	break;
     case REGISTER_FAIL_RESERVED:
-	PCLIENT("'%s' is reserved and can not be registered as user", name);
+	PCLIENT("'%s' is reserved and can not be registered as a user", name);
 	break;
     case REGISTER_FAIL_REREGISTER:
 	PCLIENT("user '%s' is already registered, can not re-register", name);
