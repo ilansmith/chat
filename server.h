@@ -4,6 +4,7 @@
 #include "chat.h"
 #include "chat_io.h"
 
+#define MEMBERS_INIT_SZ 10
 #define MSG_QUEUE_LENGTH 10
 
 #define DUMMY_USER &dummy_user
