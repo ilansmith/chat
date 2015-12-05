@@ -24,7 +24,7 @@ static void d_usage(char *binary)
 
 /* reallocating memory for more users */
 /*
-int usr_array_enlarge()
+int usr_array_enlarge(void)
 {
     int i;
 
@@ -40,7 +40,7 @@ int usr_array_enlarge()
 }
 */
 
-static svr_t *alloc_svr()
+static svr_t *alloc_svr(void)
 {
     return (svr_t *)calloc(1, sizeof(svr_t));
 }

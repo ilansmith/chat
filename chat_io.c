@@ -75,7 +75,7 @@ int msg_set_tlv(msg_t *msg, tlv_t type, ...)
     return cnt;
 }
 
-msg_t *msg_alloc()
+msg_t *msg_alloc(void)
 {
     return (msg_t *)calloc(1, sizeof(msg_t));
 }

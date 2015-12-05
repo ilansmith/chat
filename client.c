@@ -26,7 +26,7 @@
 #define IS_WHITESPACE(X) (((X)==ASCII_TAB) || ((X)==ASCII_SPACE))
 #define ASCII_CHAT_SUBSET(X) (0x20 <= (X) && (X) <= 0x7e)
 
-#define PRINT_PROMPT if (*cname) printf("%s", cname); printf("> ");          \
+#define PRINT_PROMPT if (*cname) printf("%s", cname); printf("> ");           \
     fflush(stdout)
 
 #define STR_CLOST_CONNECTION "connection with the server has been lost"
@@ -38,7 +38,7 @@
 #define FRIENDS_ONLINE 1
 #define FRIENDS_OFFLINE 0
 
-#define PCLIENT(FMT, ...) printf(FMT "\n", ##__VA_ARGS__);                   \
+#define PCLIENT(FMT, ...) printf(FMT "\n", ##__VA_ARGS__);                    \
 			  fflush(stdout);
 
 #define CNTSTR_UNDEFINED_COMMAND "undefined command"
@@ -382,7 +382,7 @@ static void c_usage(char *binary)
     PRINT("usage: %s", binary);
 }
 
-static void c_help()
+static void c_help(void)
 {
 #define FIELD_LENGTH 30
 #define HELP_CMD_PRINT(CMD, DSC) printf("%-*s - %s" "\n", FIELD_LENGTH, "> "  \
@@ -565,7 +565,7 @@ static void c_cfriends_clean(void)
 	c_cfriend_extract(friend);
 }
 
-static void c_panic()
+static void c_panic(void)
 {
     PCLIENT("\nexiting now...");
     close(csocket);
@@ -973,7 +973,7 @@ static void c_send_im(void)
 	"send an im\n" STR_CLOST_CONNECTION);
 }
 
-static void c_send_chat()
+static void c_send_chat(void)
 {
     PCLIENT("...coming soon !!!");
 }

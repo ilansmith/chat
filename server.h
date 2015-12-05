@@ -75,7 +75,7 @@ extern struct timeval zero_tm;
 extern mtx_t mtx_usrcnt;
 
 /* prototypes */
-int usr_array_enlarge();
+int usr_array_enlarge(void);
 void *s_handle(void *sck);
 
 #endif

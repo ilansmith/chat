@@ -32,7 +32,7 @@ static void mail_free(mail_t *mail)
 
 /* allocate a new mail_t */
 
-static mail_t *mail_alloc()
+static mail_t *mail_alloc(void)
 {
     mail_t *mail = NULL;
     msg_t *msg = NULL;
