@@ -1,4 +1,4 @@
-#define _MAIN_THREAD_
+#define _DAEMON_
 
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +43,6 @@ static svr_t *alloc_svr()
 /* daemon initiation function */
 static sck_t d_init()
 {
-#define MEMBERS_INIT_SZ 10
 #define QLEN 10
 
     int i;
