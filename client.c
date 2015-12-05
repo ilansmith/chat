@@ -26,8 +26,29 @@
 #define IS_WHITESPACE(X) (((X)==ASCII_TAB) || ((X)==ASCII_SPACE))
 #define ASCII_CHAT_SUBSET(X) (0x20 <= (X) && (X) <= 0x7e)
 
-#define PRINT_PROMPT if (*cname) printf("%s", cname); printf("> ");           \
-    fflush(stdout)
+#define PRINT_PROMPT                                                          \
+    SET_COLOUR(stdout, COLOUR_CLEAR);                                         \
+    if (*cname)                                                               \
+    {                                                                         \
+        SET_COLOUR(stdout, COLOUR_CLIENT_PROMPT);                             \
+	fprintf(stdout, "%s", cname);                                         \
+	SET_COLOUR(stdout, COLOUR_CLEAR);                                     \
+    }                                                                         \
+    fprintf(stdout, "> ");                                                    \
+    SET_COLOUR(stdout, COLOUR_CLIENT);                                        \
+    fflush(stdout);
+
+#define PRINT_IM(NAME, MSG)                                                   \
+    SET_COLOUR(stdout, COLOUR_CLEAR);                                         \
+    fprintf(stdout, "\n");                                                    \
+    SET_COLOUR(stdout, COLOUR_PEER_PROMPT);                                   \
+    fprintf(stdout, NAME);                                                    \
+    SET_COLOUR(stdout, COLOUR_CLEAR);                                         \
+    fprintf(stdout, ": ");                                                    \
+    SET_COLOUR(stdout, COLOUR_PEER);                                          \
+    fprintf(stdout, MSG);                                                     \
+    fprintf(stdout, "\n");                                                    \
+    SET_COLOUR(stdout, COLOUR_CLEAR);
 
 #define STR_CLOST_CONNECTION "connection with the server has been lost"
     
@@ -38,17 +59,9 @@
 #define FRIENDS_ONLINE 1
 #define FRIENDS_OFFLINE 0
 
-#define PCLIENT(FMT, ...) printf(FMT "\n", ##__VA_ARGS__);                    \
-			  fflush(stdout);
-
-#define CNTSTR_UNDEFINED_COMMAND "undefined command"
-#define CNTSTR_LOGGIN_IN "login in..."
-#define CNTSTR_REGISTERING "registering..."
-#define CNTSTR_LOGIN_SUCCESS "logged in successfuly"
-#define CNTSTR_RELOGIN "user is already logged in"
-#define CNTSTR_LOGIN_FAIL "failed to login"
-#define CNTSTR_REGISTER_SUCCESS "registered successfuly"
-#define CNTSTR_REGISTER_FAIL "failed to register"
+#define EXIT(n)                                                               \
+    COLOUR_RESET;                                                             \
+    exit(n)
 
 static cstat_t cstatus;
 static sck_t csocket;
@@ -186,7 +199,7 @@ static cmd_f c_get_command(int num, ...)
 #define ASSERT_INPUT(PRED, ESTR, ...)                                         \
 	if (PRED)                                                             \
 	{                                                                     \
-	    fprintf(stderr, "error: " ESTR "\n", ##__VA_ARGS__);              \
+	    PRINT_ERROR(ESTR "\n", ##__VA_ARGS__);                            \
 	    return cmd_error;                                                 \
 	}
 
@@ -199,8 +212,8 @@ static cmd_f c_get_command(int num, ...)
 #define ASSERT_EXTRA_PARAM(BUF, ESTR)                                         \
         tmp = inp;                                                            \
 	in_ret_val = c_input_parse(&inp, BUF, 0);                             \
-	ASSERT_INPUT(in_ret_val == -1, "%s - invalid parameter(s) for the %s "\
-	    "command", tmp, ESTR);
+	ASSERT_INPUT(in_ret_val == -1, "'%s' - invalid parameter(s) for the " \
+	    "%s command", tmp, ESTR);
 
     va_list al;
     cmd_f cmd;
@@ -219,7 +232,7 @@ static cmd_f c_get_command(int num, ...)
 	STR_MAX_COMMAND_LENGTH)) == -1)
     {
 	cmd = cmd_error;
-	PCLIENT("message too long");
+	PRINT_ERROR("message too long");
     }
     else
     {
@@ -327,8 +340,8 @@ static cmd_f c_get_command(int num, ...)
 	    break;
 	}
 
-	fprintf(stderr, "error: %s - invalid paramater(s) for the friends "
-	    "command\n", input_param[0]);
+	PRINT_ERROR("%s - invalid paramater(s) for the friends command\n", 
+	    input_param[0]);
 	cmd = cmd_error;
 	break;
     case cmd_add:
@@ -379,70 +392,87 @@ static cmd_f c_get_command(int num, ...)
 
 static void c_usage(char *binary)
 {
-    PRINT("usage: %s", binary);
+    PRINT_ERROR("usage: %s", binary);
 }
 
 static void c_help(void)
 {
 #define FIELD_LENGTH 30
-#define HELP_CMD_PRINT(CMD, DSC) printf("%-*s - %s" "\n", FIELD_LENGTH, "> "  \
-	CMD, DSC);
-#define AVAILABLE_COMMANDS printf("available commands are:\n") 
+#define HELP_STATUS_PRINT(FMT, ...)                                           \
+    SET_COLOUR(stdout, COLOUR_STATUS_PROMPT);                                 \
+    fprintf(stdout, "\nstatus:");                                             \
+    SET_COLOUR(stdout, COLOUR_STATUS);                                        \
+    fprintf(stdout, " " FMT "\n", ##__VA_ARGS__);                             \
+    SET_COLOUR(stdout, COLOUR_CLEAR);
+
+#define HELP_CMD_PRINT(CMD, DSC)                                              \
+    fprintf(stdout, "%s%-*s%s - %s" "\n", COLOUR_HELP_CMD, FIELD_LENGTH, "> " \
+    CMD, COLOUR_HELP, DSC);                                                   \
+    SET_COLOUR(stdout, COLOUR_CLEAR);
+
+#define AVAILABLE_COMMANDS                                                    \
+    SET_COLOUR(stdout, COLOUR_AVAILABLE_CMDS);                                \
+    fprintf(stdout, "available commands are:\n");                             \
+    SET_COLOUR(stdout, COLOUR_CLEAR);
 
 #ifdef DEBUG
 #define HELP_CMD_CONNECT                                                      \
-        HELP_CMD_PRINT("connect <destination>", "connect to the chat "        \
-		"network, where <destination> is either:");                   \
-	printf("%-*s    %s\n", FIELD_LENGTH, " ", "a valid IP address in "    \
-		"dot notation, or");                                          \
-	printf("%-*s    %s\n", FIELD_LENGTH, " ", "a valid host name (TBD), " \
-		"or");                                                        \
-	printf("%-*s    %s\n", FIELD_LENGTH, " ", "the character '-': "       \
-		"initially localhost, otherwise same as previous destination")
+    HELP_CMD_PRINT("connect <destination>", "connect to the chat "            \
+    "network, where <destination> is either:");                               \
+    SET_COLOUR(stdout, COLOUR_HELP);                                          \
+    fprintf(stdout, "%-*s    %s\n", FIELD_LENGTH, " ", "a valid IP "          \
+    "address in dot notation, or");                                           \
+    SET_COLOUR(stdout, COLOUR_HELP);                                          \
+    fprintf(stdout, "%-*s    %s\n", FIELD_LENGTH, " ", "a valid host "        \
+    "name (TBD), or");                                                        \
+    SET_COLOUR(stdout, COLOUR_HELP);                                          \
+    fprintf(stdout, "%-*s    %s\n", FIELD_LENGTH, " ", "the character "       \
+    "'-': initially localhost, otherwise same as previous destination");      \
+    SET_COLOUR(stdout, COLOUR_CLEAR);
 #else
 #define HELP_CMD_CONNECT HELP_CMD_PRINT("connect", "connect to the chat "     \
-	"network") 
+    "network");
 #endif
 
 #define HELP_CMD_REGISTER HELP_CMD_PRINT("register <user_name>", "register a "\
-	"new user") 
+    "new user");
 #define HELP_CMD_UNREGISTER HELP_CMD_PRINT("unregister <user_name>",          \
-	"unregister an existing user") 
+    "unregister an existing user");
 #define HELP_CMD_LOGIN HELP_CMD_PRINT("login <user_name>", "login as the "    \
-	"specified user")
+    "specified user");
 #define HELP_CMD_LOGOUT HELP_CMD_PRINT("logout", "logout the current user")
 #define HELP_CMD_DISCONNECT HELP_CMD_PRINT("disconnect", "disconnect from "   \
-	"the chat network")
-#define HELP_CMD_EXIT HELP_CMD_PRINT("exit", "exit the program") 
-#define HELP_CMD_YES HELP_CMD_PRINT("yes", "accept")
-#define HELP_CMD_NO HELP_CMD_PRINT("no", "reject")
+    "the chat network");
+#define HELP_CMD_EXIT HELP_CMD_PRINT("exit", "exit the program");
+#define HELP_CMD_YES HELP_CMD_PRINT("yes", "accept");
+#define HELP_CMD_NO HELP_CMD_PRINT("no", "reject");
 
-#define HELP_CMD_FRIENDS HELP_CMD_PRINT("friends [online | offline]", "view " \
-	"your list of friends")
+#define HELP_CMD_FRIENDS HELP_CMD_PRINT("friends [ online | offline ]",       \
+    "view your list of friends");
 #define HELP_CMD_ADD HELP_CMD_PRINT("add <friend_name>", "add a user to your "\
-	"list of friends")
+    "list of friends");
 #define HELP_CMD_REM HELP_CMD_PRINT("remove <friend_name>", "remove a user "  \
-	"from your list of friends")
+    "from your list of friends");
 #define HELP_CMD_IM HELP_CMD_PRINT("im <friend_name> <message>", "send an "   \
-	"instant message")
+    "instant message");
 #define HELP_CMD_CHAT HELP_CMD_PRINT("chat <friend_name>", "chat with a "     \
-	"user (TBD)")
+    "user (TBD)");
 #define HELP_CMD_ACCEPT HELP_CMD_PRINT("accept <friend_name>", "accept an "   \
-	"incoming chat request")
+    "incoming chat request");
 #define HELP_CMD_REJECT HELP_CMD_PRINT("reject <friend_name>", "reject an "   \
-	"incoming chat request")
-#define HELP_CMD_
+    "incoming chat request");
 
     switch (cstatus)
     {
     case CSTAT_CONNECT:
-	printf("you are currently not connected to the chat network\n");
+	HELP_STATUS_PRINT("you are currently not connected to the chat "
+	    "network");
 	AVAILABLE_COMMANDS;
 	HELP_CMD_CONNECT;
 	HELP_CMD_EXIT;
 	break;
     case CSTAT_LOGIN:
-	printf("you are currently connected to the chat network\n");
+	HELP_STATUS_PRINT("you are currently connected to the chat network");
 	AVAILABLE_COMMANDS;
 	HELP_CMD_REGISTER;
 	HELP_CMD_UNREGISTER;
@@ -451,19 +481,20 @@ static void c_help(void)
 	HELP_CMD_EXIT;
 	break;
     case CSTAT_EXIT:
-	printf("you have requested to exit the program\n");
+	HELP_STATUS_PRINT("you have requested to exit the program");
 	AVAILABLE_COMMANDS;
 	HELP_CMD_YES;
 	HELP_CMD_NO;
 	break;
     case CSTAT_DISCONNECT:
-	printf("you have requested to disconnect from the chat network\n");
+	HELP_STATUS_PRINT("you have requested to disconnect from the chat "
+	    "network");
 	AVAILABLE_COMMANDS;
 	HELP_CMD_YES;
 	HELP_CMD_NO;
 	break;
     case CSTAT_LOOP:
-	printf("you are logged in as '%s'\n", cname);
+	HELP_STATUS_PRINT("you are logged in as '%s'", cname);
 	AVAILABLE_COMMANDS;
 	HELP_CMD_FRIENDS;
 	HELP_CMD_ADD;
@@ -529,19 +560,21 @@ static void c_init(int argc, char *argv[])
 	return;
     }
 
-    PRINT("*****************************************");
-    PRINT("*                                       *");
-    PRINT("*          Welcome to IAS-Chat          *");
-    PRINT("*                Client                 *");
-    PRINT("*                                       *");
-    PRINT("*           %c IAS, April 2004           *", ASCII_COPYRIGHT);
-    PRINT("*****************************************");
-    PRINT("");
-    PRINT("");
-    PRINT("type 'help' at any stage for a list of available commands");
+    PRINT_INTRO("*****************************************");
+    PRINT_INTRO("*                                       *");
+    PRINT_INTRO("*          Welcome to IAS-Chat          *");
+    PRINT_INTRO("*                %sClient%s%s%s                 *", 
+	COLOUR_APP_NAME, COL_RESET, COL_BG_BLACK, COLOUR_CLEAR);
 
+    PRINT_INTRO("*                                       *");
+    PRINT_INTRO("*           %c IAS, April 2004           *", ASCII_COPYRIGHT);
+    PRINT_INTRO("*****************************************");
+    PRINT_INTRO(STR_NIL);
+    PRINT_INTRO(STR_NIL);
+    PRINT_FEEDBACK("type 'help' at any stage for a list of available commands");
+    
 #ifdef DEBUG
-    PRINT("DEBUG mode");
+    PRINT_DEBUG("DEBUG mode");
 #endif
 
     input_param[0] = input_param_0;
@@ -567,10 +600,11 @@ static void c_cfriends_clean(void)
 
 static void c_panic(void)
 {
-    PCLIENT("\nexiting now...");
+    PRINT_FEEDBACK("\nexiting now...");
     close(csocket);
     c_cfriends_clean();
-    exit(0);
+    
+    EXIT(0);
 }
 
 static void c_cfriends_init(void)
@@ -605,18 +639,15 @@ static void c_cfriends_init(void)
 	    break;
 	case FRIEND_UNREGISTER:
 	    aptr = MSG_VAL(&in_msg) + sizeof(long);
-	    PCLIENT("user '%s' has unregistered", aptr);
+	    PRINT_FEEDBACK("user '%s' has unregistered", aptr);
 	    break;
 	default:
-	    PCLIENT("could not complete friends initialization");
-	    PCLIENT("disconnecting...");
+	    PRINT_ERROR("could not complete friends initialization");
+	    PRINT_FEEDBACK("disconnecting...");
 	    close(csocket);
 	    cstatus = CSTAT_CONNECT;
 	}
     }
-#ifdef DEBUG
-    PCLIENT("received list of friends");
-#endif
 }
 
 static void c_exit(void)
@@ -626,7 +657,7 @@ static void c_exit(void)
     msg_t out_msg;
 
     cstatus = CSTAT_EXIT;
-    PCLIENT("are you sure you would like to exit?");
+    PRINT_FEEDBACK("are you sure you would like to exit?");
 
     do
     {
@@ -655,9 +686,10 @@ static void c_exit(void)
 
     msg_set_data(&out_msg, DISCONNECT, 0, NULL);
     msg_send(&out_msg, csocket);
-    close(csocket);
+    if (close(csocket))
+	EXIT(1);
 
-    exit(0);
+    EXIT(0);
 }
 
 /* reach this routene in state CSTAT_CONNECT */
@@ -708,8 +740,7 @@ static void c_connect(void)
 
 	if (!inet_aton(sname, &saddr) /* && gethostbyname */ )
 	{
-	    fprintf(stderr, "error: %s is not a valid IP address or host "
-		"name\n", sname);
+	    PRINT_ERROR("%s is not a valid IP address or host name\n", sname);
 
 #ifdef DEBUG
 	    memset(sname, 0, STR_MAX_HOST_NAME_LENGTH);
@@ -734,11 +765,11 @@ static void c_connect(void)
 
 	if (connect(csocket, (sockaddr *)&sad, sizeof(sad)) < 0)
 	{
-	    fprintf(stderr, "could not connect to %s\n", sname);
+	    PRINT_ERROR("could not connect to %s\n", sname);
 	    return;
 	}
 
-	PCLIENT("conencted to %s", sname);
+	PRINT_FEEDBACK("conencted to %s", sname);
 	cstatus = CSTAT_LOGIN;
 	break;
     case cmd_help:
@@ -760,7 +791,7 @@ static void c_disconnect(void)
     cstat_t status_hook = cstatus;
 
     cstatus = CSTAT_DISCONNECT;
-    PCLIENT("are you sure you would like to disconnect?");
+    PRINT_FEEDBACK("are you sure you would like to disconnect?");
 
     do
     {
@@ -808,16 +839,19 @@ static void c_register(char *name)
     switch (MSG_TYP(&msg))
     {
     case REGISTER_SUCCESS:
-	PCLIENT("user '%s' was successfuly registered", name);
+	PRINT_FEEDBACK("user '%s' was successfuly registered", name);
 	break;
     case REGISTER_FAIL_RESERVED:
-	PCLIENT("'%s' is reserved and can not be registered as a user", name);
+	PRINT_ERROR("'%s' is reserved and can not be registered as a user", 
+	    name);
 	break;
     case REGISTER_FAIL_REREGISTER:
-	PCLIENT("user '%s' is already registered, can not re-register", name);
+	PRINT_ERROR("user '%s' is already registered, can not re-register", 
+	    name);
 	break;
     case REGISTER_FAIL_CAPACITY:
-	PCLIENT("user capacity is full, '%s' could not be registered", name);
+	PRINT_ERROR("user capacity is full, '%s' could not be registered", 
+	    name);
 	break;
     default:
 	/* TODO: sanity check*/
@@ -836,8 +870,14 @@ static void c_unregister(char *name)
     ASSERT(msg_recv(&msg, csocket), ERRT_RECV, ERRA_PANIC, "could not "
 	"complete unregistration\n" STR_CLOST_CONNECTION);
 
-    PCLIENT("user '%s' %s", name, (MSG_TYP(&msg) == UNREGISTER_SUCCESS ?
-	"was successfuly unregistered" : "could not be unregistered"));
+    if (MSG_TYP(&msg) == UNREGISTER_SUCCESS)
+    {
+	PRINT_FEEDBACK("user '%s' was successfuly unregistered", name);
+    }
+    else
+    {
+	PRINT_ERROR("user '%s' could not be unregistered", name);
+    }
 }
 
 static void c_login(void)
@@ -865,15 +905,15 @@ static void c_login(void)
 	{
 	case LOGIN_SUCCESS:
 	    strncpy(cname, input_param[0], STR_MAX_NAME_LENGTH);
-	    PCLIENT("user '%s' logged in successfuly", cname);
+	    PRINT_FEEDBACK("user '%s' logged in successfuly", cname);
 	    cstatus = CSTAT_LOOP;
 	    break;
 	case LOGIN_LOGGEDIN:
-	    PCLIENT("user '%s' is already logged in, can not re-login",
+	    PRINT_FEEDBACK("user '%s' is already logged in, can not re-login",
 		input_param[0]);
 	    break;
 	case LOGIN_FAIL:
-	    PCLIENT("user '%s' is not registered, must first register",
+	    PRINT_FEEDBACK("user '%s' is not registered, must first register",
 		input_param[0]);
 	    break;
 	default:
@@ -912,7 +952,7 @@ static void c_logout(void)
     ASSERT(msg_send(&out_msg, csocket), ERRT_SEND, ERRA_PANIC, "could not "
 	"send a login request\n STR_CLOST_CONNECTION");
 
-    PCLIENT("user '%s' logged out succesfully", cname);
+    PRINT_FEEDBACK("user '%s' logged out succesfully", cname);
     cstatus = CSTAT_LOGIN;
 }
 
@@ -925,7 +965,7 @@ static void c_send_im(void)
 
     if (!strncmp(cname, input_param[0], STR_MAX_NAME_LENGTH))
     {
-	PCLIENT("can't send yourself an instant message");
+	PRINT_ERROR("can't send yourself an instant message");
 	return;
     }
 
@@ -950,13 +990,14 @@ static void c_send_im(void)
 
     if (!friend)
     {
-	PCLIENT("user '%s' is not on your list of friends", input_param[0]);
+	PRINT_FEEDBACK("user '%s' is not on your list of friends", 
+	    input_param[0]);
 	return;
     }
 
     if (!i)
     {
-	PCLIENT("user '%s' is currently offline, try again later", 
+	PRINT_FEEDBACK("user '%s' is currently offline, try again later", 
 	    input_param[0]);
 	return;
     }
@@ -975,7 +1016,7 @@ static void c_send_im(void)
 
 static void c_send_chat(void)
 {
-    PCLIENT("...coming soon !!!");
+    PRINT_FEEDBACK("...coming soon !!!");
 }
 
 static void c_show_friends(int status)
@@ -983,18 +1024,25 @@ static void c_show_friends(int status)
     cfriend_t *fptr = (status == FRIENDS_ONLINE) ? friends_loggedon :
 	friends_loggedoff;
 
-    printf("%s:\n", (status == FRIENDS_ONLINE) ? "online" : "offline");
+    PRINT_FEEDBACK("%s:", (status == FRIENDS_ONLINE) ? "online" : "offline");
 
     if (!fptr)
-	printf(" none\n");
+    {
+	SET_COLOUR(stdout, COLOUR_CLEAR);
+	fprintf(stdout, " none\n");
+    }
     else
     {
+	SET_COLOUR(stdout, (status == FRIENDS_ONLINE) ? COL_BRIGHT_CYAN :
+	   COL_BRIGHT_RED);
 	do
 	{
 	    printf(" %s\n", fptr->fname);
 	    fptr = fptr->next;
 	}
 	while (fptr);
+
+	SET_COLOUR(stdout, COLOUR_CLEAR);
     }
 }
 
@@ -1004,7 +1052,7 @@ static int c_validate_new_friend(cfriend_t *flist, char *name)
     {
 	if (!strncmp(flist->fname, name, STR_MAX_NAME_LENGTH))
 	{
-	    PCLIENT("users '%s' is already in your list of friends",
+	    PRINT_FEEDBACK("users '%s' is already in your list of friends",
 		flist->fname);
 	    return -1;
 	}
@@ -1024,7 +1072,7 @@ static void c_add_friend(void)
 
     if (!strncmp(cname, input_param[0], STR_MAX_NAME_LENGTH))
     {
-	PCLIENT("can't add yourself to your list of friends");
+	PRINT_ERROR("can't add yourself to your list of friends");
 	return;
     }
 
@@ -1056,7 +1104,7 @@ static void c_add_friend(void)
 
 	if (!ret)
 	{
-	    PCLIENT("user '%s' has been added to your of list friends",
+	    PRINT_FEEDBACK("user '%s' has been added to your of list friends",
 		input_param[0]);
 	    /* 
 	    PCLIENT("user '%s' is currently %s", input_param[0], fconnected ? 
@@ -1065,18 +1113,18 @@ static void c_add_friend(void)
 	}
 	else
 	{
-	    PCLIENT("error: couldn't add '%s' to your list o friends",
+	    PRINT_ERROR("couldn't add '%s' to your list o friends", 
 		input_param[0]);
 	}
 	break;
     case FRIEND_ADD_FAIL:
-	PCLIENT("user '%s' is not registered", input_param[0]);
+	PRINT_FEEDBACK("user '%s' is not registered", input_param[0]);
 	break;
     default:
 #ifdef DEBUG
-	printf("received a bad message:\n");
-	printf("MSG_TYP(&in_msg): %i\n", MSG_TYP(&in_msg));
-	printf("MSG_LEN(&in_msg): %i\n", MSG_LEN(&in_msg));
+	PRINT_DEBUG("received a bad message:\n");
+	PRINT_DEBUG("MSG_TYP(&in_msg): %i\n", MSG_TYP(&in_msg));
+	PRINT_DEBUG("MSG_LEN(&in_msg): %i\n", MSG_LEN(&in_msg));
 #endif
 	break;
     }
@@ -1106,7 +1154,8 @@ static void c_remove_friend(void)
 
     if (!(*fptr))
     {
-	PCLIENT("user '%s' is not in your list of friends", input_param[0]);
+	PRINT_FEEDBACK("user '%s' is not in your list of friends", 
+	   input_param[0]);
 	return;
     }
 
@@ -1115,7 +1164,7 @@ static void c_remove_friend(void)
 	"remove a friend\n" STR_CLOST_CONNECTION);
 
     c_cfriend_extract(fptr);
-    PCLIENT("user '%s' has been removed from your list of friends",
+    PRINT_FEEDBACK("user '%s' has been removed from your list of friends",
 	input_param[0]);
 }
 
@@ -1125,9 +1174,7 @@ static void c_receive_im(char *buffer)
 
     nameptr = buffer;
     msgptr = buffer + strlen(nameptr) + 1;
-
-    printf("\n%s: %s\n", nameptr, msgptr);
-    fflush(stdout);
+    PRINT_IM(nameptr, msgptr);
 }
 
 static int c_cfriend_change_status(long fid, int status)
@@ -1183,8 +1230,8 @@ static int c_cfriend_change_status(long fid, int status)
     temp->next = *new_list;
     *new_list = temp;
 
-    PCLIENT("\nuser '%s' has logged %s", temp->fname, (status == FRIENDS_ONLINE)
-	? "in" : "out");
+    PRINT_FEEDBACK("\nuser '%s' has logged %s", temp->fname, 
+	(status == FRIENDS_ONLINE) ? "in" : "out");
 
     return 0;
 }
@@ -1215,13 +1262,13 @@ static void c_cfriend_unregister(long fid)
     temp = *friend;
     *friend = (*friend)->next;
 
-    PCLIENT("\nuser '%s' has unregistered", temp->fname);
+    PRINT_FEEDBACK("\nuser '%s' has unregistered", temp->fname);
     free(temp);
 }
 
 static void c_announce_collegue_add(char *name)
 {
-    PCLIENT("\nuser '%s' has added you as a friend", name);
+    PRINT_FEEDBACK("\nuser '%s' has added you as a friend", name);
 }
 
 static void c_loop(void)
@@ -1233,7 +1280,7 @@ static void c_loop(void)
     int loop = 1;
 
     c_cfriends_init();
-    PCLIENT("user '%s' is ready to chat!", cname);
+    PRINT_FEEDBACK("user '%s' is ready to chat!", cname);
 
     while (loop)
     {
@@ -1322,9 +1369,9 @@ static void c_loop(void)
 		break;
 	    default:
 #ifdef DEGUB
-		printf("received a bad message:\n");
-		printf("MSG_TYP(&in_msg): %i\n", MSG_TYP(&in_msg));
-		printf("MSG_LEN(&in_msg): %i\n", MSG_LEN(&in_msg));
+		PRINT_DEBUG("received a bad message:\n");
+		PRINT_DEBUG("MSG_TYP(&in_msg): %i\n", MSG_TYP(&in_msg));
+		PRINT_DEBUG("MSG_LEN(&in_msg): %i\n", MSG_LEN(&in_msg));
 #endif
 		break;
 	    }
@@ -1355,7 +1402,7 @@ int main(int argc, char *argv[])
 	    c_exit();
 	    break;
 	case CSTAT_ERROR:
-	    exit(1);
+	    EXIT(1);
 	default:
 	    /* TODO: sanity check */
 	    break;
