@@ -20,6 +20,8 @@
 #define CONN_PROTO_HNDL "tcp"
 #define CONN_PORT 5555
 
+#define ASCII_COPYRIGHT 0xa9
+#define PRINT(arg, ...) printf(arg "\n", ##__VA_ARGS__)
 
 #define STR_NIL ""
 #define STR_MAX_COMMAND_LENGTH 11
