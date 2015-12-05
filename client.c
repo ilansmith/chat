@@ -379,7 +379,7 @@ static cmd_f c_get_command(int num, ...)
 
 static void c_usage(char *binary)
 {
-    PCLIENT("usage: %s", binary);
+    PRINT("usage: %s", binary);
 }
 
 static void c_help()
@@ -512,8 +512,20 @@ static void c_init(int argc, char *argv[])
 	return;
     }
 
+    PRINT("*****************************************");
+    PRINT("*                                       *");
+    PRINT("*          Welcome to IAS-Chat          *");
+    PRINT("*                Client                 *");
+    PRINT("*                                       *");
+    PRINT("*           %c IAS, April 2004           *", ASCII_COPYRIGHT);
+    PRINT("*****************************************");
+    PRINT("");
+    PRINT("type 'help' at any stage for a list of available commands");
+    PRINT("");
+    PRINT("");
+
 #ifdef DEBUG
-    PCLIENT("debug mode");
+    PRINT("DEBUG mode");
 #endif
 
     input_param[0] = input_param_0;
@@ -1259,8 +1271,6 @@ static void c_loop(void)
 
 	if (FD_ISSET(csocket, &rfds))
 	{
-	    msg_recv(&in_msg, csocket);
-
 	    ASSERT(msg_recv(&in_msg, csocket), ERRT_RECV, ERRA_PANIC, "could "
 		"not receive data from the server\n" STR_CLOST_CONNECTION);
 	    switch (MSG_TYP(&in_msg))
