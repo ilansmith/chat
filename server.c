@@ -987,10 +987,39 @@ static void s_login(svr_t *svr, char *cname)
     }
 }
 
+/* verify that cname is not reserved */
+static int s_is_reserved(char *cname)
+{
+    char **ptr = NULL;
+    char *reserved[] =
+    {
+	"none",
+	NULL,
+    };
+
+    for (ptr = reserved; *ptr; ptr++)
+    {
+	if (!strcmp(cname, *ptr))
+	    return 1;
+    }
+
+    return 0;
+}
+
 /* register a new client */
-static int s_register(char *cname)
+static tlv_t s_register(char *cname)
 {
     long i, first_free_index;
+
+    /* verify that cname is not reserved */
+    if (s_is_reserved(cname))
+    {
+#ifdef DEBUG
+	PSVR(STR_NIL, "register faild, '%s' is reserved", cname);
+#endif
+
+	return REGISTER_FAIL_RESERVED;
+    }
 
     CS_START(mtx_usrcnt);
     first_free_index = -1;
@@ -1015,13 +1044,13 @@ static int s_register(char *cname)
 		cname);
 #endif
 
-	    return  -1;
+	    return REGISTER_FAIL_REREGISTER;
 	}
     }
 
     /* users[] is full */
     if (first_free_index == -1)
-	return -1;
+	return REGISTER_FAIL_CAPACITY;
 
     /* allocate new user */
     if (!(users[first_free_index] = user_alloc(cname, first_free_index)))
@@ -1032,7 +1061,7 @@ static int s_register(char *cname)
 	    "registered", cname);
 #endif
 
-	return -1;
+	return REGISTER_FAIL_CAPACITY;
     }
 
     usr_count++;
@@ -1041,7 +1070,7 @@ static int s_register(char *cname)
     PSVR(STR_NIL, "user '%s' registered successfuly", cname);
 #endif
 
-    return 0;
+    return REGISTER_SUCCESS;
 }
 
 static int s_unregister(svr_t *svr, char *cname)
@@ -1165,8 +1194,7 @@ static void s_init(svr_t *svr)
 		STR_MAX_NAME_LENGTH));
 
 	    /* TODO: bug - same message for users[] full and re-register */
-	    msg_type = s_register(cname) ? REGISTER_FAIL_REREGISTER :
-		REGISTER_SUCCESS;
+	    msg_type = s_register(cname);
 	    break;
 
 	case UNREGISTER:
