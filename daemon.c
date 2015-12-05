@@ -6,8 +6,9 @@
 #include "server.h"
 
 #define PDMN(FMT, ...)                                                        \
+    SET_COLOUR(stdout, COLOUR_DAEMON); \
     fprintf(stdout, "daemon: " FMT "\n", ##__VA_ARGS__);                      \
-    fflush(stdout);
+    COLOUR_RESET;
 
 #define ASSERT(VALUE, ERROR, ACTION, FMT, ...)                                \
     __ASSERT(VALUE, ERROR, ACTION, printf(FMT, ##__VA_ARGS__));
