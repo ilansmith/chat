@@ -5,10 +5,16 @@
 #include <pthread.h>
 #include "server.h"
 
-#define PDMN(FMT, ...) printf("daemon: " FMT "\n", ##__VA_ARGS__);            \
-                       fflush(stdout);
-#define ASSERT(VALUE, ERROR, ACTION, FMT, ...) __ASSERT(VALUE, ERROR, ACTION, \
-	PDMN(FMT, ##__VA_ARGS__))
+#define PDMN(FMT, ...)                                                        \
+    fprintf(stdout, "daemon: " FMT "\n", ##__VA_ARGS__);                      \
+    fflush(stdout);
+
+#define ASSERT(VALUE, ERROR, ACTION, FMT, ...)                                \
+    __ASSERT(VALUE, ERROR, ACTION, printf(FMT, ##__VA_ARGS__));
+
+#define EXIT(n)                                                               \
+    COLOUR_RESET;                                                             \
+    exit(n)
 
 user_t **users;
 user_t dummy_user;
@@ -19,7 +25,7 @@ mtx_t mtx_usrcnt;
 
 static void d_usage(char *binary)
 {
-    PRINT("usage: %s", binary);
+    PRINT_ERROR("usage: %s", binary);
 }
 
 /* reallocating memory for more users */
@@ -59,23 +65,24 @@ static sck_t d_init(int argc, char *argv[])
     if (argc != 1)
     {
 	d_usage(argv[0]);
-	exit(1);
+	EXIT(1);
     }
 
-    PRINT("*****************************************");
-    PRINT("*                                       *");
-    PRINT("*          Welcome to IAS-Chat          *");
-    PRINT("*                Server                 *");
-    PRINT("*                                       *");
-    PRINT("*           %c IAS, April 2004           *", ASCII_COPYRIGHT);
-    PRINT("*****************************************");
-    PRINT("");
-    PRINT("");
+    PRINT_INTRO("*****************************************");
+    PRINT_INTRO("*                                       *");
+    PRINT_INTRO("*          Welcome to IAS-Chat          *");
+    PRINT_INTRO("*                %sServer%s%s%s                 *",
+	COLOUR_APP_NAME, COL_RESET, COL_BG_BLACK, COLOUR_CLEAR);
+    PRINT_INTRO("*                                       *");
+    PRINT_INTRO("*           %c IAS, April 2004           *", ASCII_COPYRIGHT);
+    PRINT_INTRO("*****************************************");
+    PRINT_INTRO(STR_NIL);
+    PRINT_INTRO(STR_NIL);
 
 #ifdef DEBUG
-    PRINT("DEBUG mode");
+    PRINT_DEBUG("DEBUG mode");
 #else
-    PRINT("press <Ctrl-C> to quit");
+    PRINT_FEEDBACK("press <Ctrl-C> to quit");
 #endif
 
     /* initiation of mutexs and time object */
