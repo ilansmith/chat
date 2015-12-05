@@ -11,7 +11,7 @@
     COLOUR_RESET;
 
 #define ASSERT(VALUE, ERROR, ACTION, FMT, ...)                                \
-    __ASSERT(VALUE, ERROR, ACTION, printf(FMT, ##__VA_ARGS__));
+    __ASSERT(VALUE, ERROR, ACTION, fprintf(stderr, FMT, ##__VA_ARGS__));
 
 #define EXIT(n)                                                               \
     COLOUR_RESET;                                                             \

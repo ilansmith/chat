@@ -68,17 +68,20 @@
 #endif
 
 #define ERROR_HANDLE(ACTION, ...)                                             \
-        printf("\n%s%s%serror:%s %s", COL_BG_BLACK, COLOUR_CLEAR,             \
-	   COLOUR_ERROR_PROMPT, COL_BG_BLACK, COLOUR_ERROR),                  \
-        ##__VA_ARGS__;                                                        \
-	switch (ACTION)                                                       \
-        {                                                                     \
-        case ERRA_PANIC:                                                      \
-	    PANIC_EXIT                                                        \
-	    break;                                                            \
-	case ERRA_WARN:                                                       \
-            break;                                                            \
-	}
+    SET_COLOUR(stderr, COLOUR_ERROR_PROMPT); \
+    fprintf(stderr, "\nerror:%s ", COL_RESET),             \
+    SET_COLOUR(stderr, COLOUR_ERROR); \
+    fprintf(stderr, " "),             \
+    ##__VA_ARGS__;                                                        \
+    SET_COLOUR(stderr, COL_RESET); \
+    switch (ACTION)                                                       \
+    {                                                                     \
+    case ERRA_PANIC:                                                      \
+        PANIC_EXIT                                                        \
+        break;                                                            \
+    case ERRA_WARN:                                                       \
+        break;                                                            \
+    }
 
 #define FAIL_EQUAL_ZERO(VALUE, ACTION, ...)                                   \
 	if (!(VALUE))                                                         \

@@ -56,7 +56,7 @@ typedef enum {
 #define MSG_VAL_COLLEGUE_NM(MSG) ((char *)(MSG_VAL(MSG) + sizeof(long)))
 
 /* colours */
-#define COL_RESET "\033[00;00m"
+#define COL_RESET "\033[00;00;00m"
 /* #define COL_BLACK "\033[00;30m" */
 #define COL_BRIGHT_BLACK "\033[01;30m"
 /* #define COL_RED "\033[00;31m" */
@@ -115,10 +115,10 @@ typedef enum {
 #define PRINT_ERROR(FMT, ...)                                                 \
     SET_COLOUR(stderr, COLOUR_CLEAR);                                         \
     SET_COLOUR(stderr, COL_BG_BRIGHT_RED);                                    \
-    fprintf(stderr, "error:");                                                \
+    fprintf(stderr, "error:"),                                                \
     SET_COLOUR(stderr, COLOUR_CLEAR);                                         \
     SET_COLOUR(stderr, COL_YELLOW);                                           \
-    fprintf(stderr, " " FMT "\n", ##__VA_ARGS__);                             \
+    fprintf(stderr, " " FMT "\n", ##__VA_ARGS__),                             \
     SET_COLOUR(stderr, COL_RESET);
 
 #define PRINT_INTRO(FMT, ...)                                                 \

@@ -12,13 +12,19 @@
 #include <pthread.h>
 #include "server.h"
 
-#define PSVR(NAME, FMT, ...) printf("server");                              \
-                             if (strcmp(STR_NIL, NAME))                     \
-			         printf(" (%s)", NAME);                     \
-			     printf(": " FMT "\n", ##__VA_ARGS__);          \
-                             fflush(stdout);
-#define ASSERT(VALUE, ERROR, ACTION, NAME, FMT, ...) __ASSERT(VALUE, ERROR, \
-	ACTION, PSVR(NAME, FMT, ##__VA_ARGS__))
+#define _PSVR(STREAM, NAME, FMT, ...) \
+    fprintf(STREAM, "server");                       \
+    if (strcmp(STR_NIL, NAME))                       \
+        fprintf(STREAM, " (%s)", NAME);              \
+    fprintf(STREAM, ": " FMT "%s\n",  ##__VA_ARGS__, \
+	COL_RESET);     \
+    fflush(stderr);
+
+#define PSVR(NAME, FMT, ...) _PSVR(stdout, NAME, FMT, ##__VA_ARGS__);
+#define PSVRERR(NAME, FMT, ...) _PSVR(stderr, NAME, FMT, ##__VA_ARGS__);
+
+#define ASSERT(VALUE, ERROR, ACTION, NAME, FMT, ...) __ASSERT(VALUE, ERROR,   \
+	ACTION, PSVRERR(NAME, FMT, ##__VA_ARGS__))
 
 /* free a mail_t and the msg_t it wraps */
 static void mail_free(mail_t *mail)
@@ -237,7 +243,7 @@ static int s_mail_post(user_t *sender, user_t *receiver, tlv_t type)
     last_mail = &(receiver->mailbox);
     while (*last_mail)
     {
-	/* a sender can not send the same message more than once before it gets
+	/* a sender cannot send the same message more than once before it gets
 	 * handeld by the receiver */
 	if ((MSG_TYP((*last_mail)->msg) == type) &&
 	    (*((long *)MSG_VAL((*last_mail)->msg)) == sender->cid))
@@ -942,6 +948,7 @@ static void s_serve(svr_t *svr)
 	    break;
 
 	case SSTAT_CHAT_REQUEST:
+	    /* TODO */
 	    break;
 
 	case SSTAT_DISCONNECT:
