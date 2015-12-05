@@ -1,4 +1,4 @@
-#define _SUB_THREAD_
+#define _SERVER_
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,8 +11,6 @@
 #include <string.h>
 #include <pthread.h>
 #include "server.h"
-
-#define STR_NIL ""
 
 #define PSVR(NAME, FMT, ...) printf("server");                              \
                              if (strcmp(STR_NIL, NAME))                     \
@@ -1128,12 +1126,18 @@ static void s_init(svr_t *svr)
 	    break;
 
 	case REGISTER:
+	    if (usr_count == MEMBERS_INIT_SZ)
+	    {
+		msg_type = REGISTER_FAIL_CAPACITY;
+		break;
+	    }
 	    memset(cname, 0, STR_MAX_NAME_LENGTH);
 	    memcpy(cname, (char *)MSG_VAL(&in_msg), MIN(MSG_LEN(&in_msg),
 		STR_MAX_NAME_LENGTH));
 
 	    /* TODO: bug - same message for users[] full and re-register */
-	    msg_type = s_register(cname) ? REGISTER_FAIL : REGISTER_SUCCESS;
+	    msg_type = s_register(cname) ? REGISTER_FAIL_REREGISTER :
+		REGISTER_SUCCESS;
 	    break;
 
 	case UNREGISTER:
