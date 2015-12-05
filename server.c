@@ -994,6 +994,8 @@ static int s_is_reserved(char *cname)
     char *reserved[] =
     {
 	"none",
+	"online",
+	"offline",
 	NULL,
     };
 
