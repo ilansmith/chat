@@ -922,7 +922,7 @@ static int c_send_im(void)
 
 static void c_send_chat()
 {
-    PCLIENT("...coming soon!");
+    PCLIENT("...coming soon !!!");
 }
 
 static void c_show_friends(int status)
